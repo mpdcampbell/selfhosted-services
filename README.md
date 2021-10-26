@@ -17,7 +17,7 @@ Only config file in repo is the docker-compose.yml.<br />
 6. [Heimdall](#heimdall)
 
 ### Traefik
-- [Traefik (V2)](https://github.com/traefik/traefik) is a reverse proxy and is the backbone of the set up. <br />
+- [Traefik (V2)](https://github.com/traefik/traefik#readme) is a reverse proxy and is the backbone of the set up. <br />
 - Traefik sits between the services and the outside world (specifically http and https ports 80 and 443).<br />
 - Each service has a corresponding subdomain registered at the DNS and Traefik routes each subdomain request to the correct service.<br />
 - This allows traffic to *jitsi.example.com* to access jitsi service without opening the jitsi external port on the network.<br />
@@ -26,7 +26,7 @@ Only config file in repo is the docker-compose.yml.<br />
 - A different http security header middleware is define for each service to allow future customisation.
 
 ### Authelia
-- [Authelia](https://github.com/authelia/authelia) is an authentication server providing two factor authentication for all the services.
+- [Authelia](https://github.com/authelia/authelia#readme) is an authentication server providing two factor authentication for all the services.
 - Allows users to be created and access level (no auth, single factor, two factor, no access) on a per service basis.
 - Supports U2F and one time passwords via Google authenticator, but currently 2FA is set up via mobile push notifications using Duo.
 <p align="Left">
@@ -34,7 +34,7 @@ Only config file in repo is the docker-compose.yml.<br />
 </p>
 
 ### Heimdall
-- [Heimdall](https://github.com/linuxserver/Heimdall) is an application dashboard, used here as a simple homepage.
+- [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
 
 ### Jitsi
 
