@@ -33,11 +33,18 @@ Only config file in repo is the docker-compose.yml.<br />
 <img align="center" src="/images/autheliaDemo.gif" alt="2FA demo of accessing heimdall" width="380"><br \>
 </p>
 
-### Heimdall
-- [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
 
 ### Jitsi
-
+- [Jitsi](https://github.com/jitsi/jitsi-meet#readme) A full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.</br> 
+- Setting this up during the pandemic has been huge quality of life upgrade over Zoom and I highly recommend it. </br>
+- The bulk of my docker-compose yml, Jitsi consists of four services working together. </br>
+    - **Jitsi Web:**
+    - **Jitsi Videobridge (JVB):**
+    - **Jitsi Conference Focus (Jicofo):**
+    - **[Prosody](https://github.com/prosody):** An XMPP server, and linked as the only component not made by the Jitsi team.
 
 ### Shinobi
 ### Photoview
+### Heimdall
+- [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
+
