@@ -35,7 +35,7 @@ Only config file in repo is the docker-compose.yml.<br />
 
 
 ### Jitsi
-- [Jitsi](https://github.com/jitsi/jitsi-meet#readme) A full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.</br> 
+- [Jitsi](https://github.com/jitsi/jitsi-meet#readme) is a full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.</br> 
 - Setting this up during the pandemic has been huge quality of life upgrade over Zoom and I highly recommend it. </br>
 - The bulk of my docker-compose yml, Jitsi consists of four services working together. </br>
     - **Jitsi Web:**
