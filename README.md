@@ -12,15 +12,15 @@ Only config file in repo is the docker-compose.yml.<br />
 1. [Traefik](#traefik)
 2. [Authelia](#authelia)
 3. [Jitsi](#jitsi)
-4. [Shinobi](#shinobi)
-5. [Photoview](#photoview)
+4. [Photoview](#photoview)
+5. [Shinobi](#shinobi)
 6. [Heimdall](#heimdall)
 
 ### Traefik
 - [Traefik (V2)](https://github.com/traefik/traefik#readme) is a reverse proxy and is the backbone of the set up. <br />
 - Traefik sits between the services and the outside world (specifically http and https ports 80 and 443).<br />
 - Each service has a corresponding subdomain registered at the DNS and Traefik routes each subdomain request to the correct service.<br />
-- This allows traffic to *jitsi.example.com* to access jitsi service without opening the jitsi external port on the network.<br />
+- This allows traffic to *service.example.com* to access the service without opening the service external port on the network.<br />
 - As well as convenience, Traefik handles security as all traffic is routed through middlewares where requests can be filtered and modified before the reach the service.<br />
 - Main middlewares in this set up are http to https redirect, request rate limiter, a middleware applying range of http security headers and a middleware routing requests through authelia for two factor authentication.<br />
 - A different http security header middleware is define for each service to allow future customisation.
@@ -30,21 +30,30 @@ Only config file in repo is the docker-compose.yml.<br />
 - Allows users to be created and access level (no auth, single factor, two factor, no access) on a per service basis.
 - Supports U2F and one time passwords via Google authenticator, but currently 2FA is set up via mobile push notifications using Duo.
 <p align="Left">
-<img align="center" src="/images/autheliaDemo.gif" alt="2FA demo of accessing heimdall" width="380"><br \>
+<img align="center" src="/images/autheliaDemo.gif" alt="2FA demo of accessing heimdall" width="275"><br \>
 </p>
 
 
 ### Jitsi
 - [Jitsi](https://github.com/jitsi/jitsi-meet#readme) is a full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.</br> 
-- Setting this up during the pandemic has been huge quality of life upgrade over Zoom and I highly recommend it. </br>
+- Setting this up during the pandemic has been huge quality of life upgrade over Zoom, I highly recommend it. </br>
 - The bulk of my docker-compose yml, Jitsi consists of four services working together. </br>
-    - **Jitsi Web:**
-    - **Jitsi Videobridge (JVB):**
-    - **Jitsi Conference Focus (Jicofo):**
-    - **[Prosody](https://github.com/prosody):** An XMPP server, and linked as the only component not made by the Jitsi team.
+    - **Jitsi Meet (Jitsi_web):** The frontend interface for Jitsi. 
+    - **Jitsi Videobridge (JVB):** The traffic controller, a server that routes video streams between participants
+    - **Jitsi Conference Focus (Jicofo):** Conference manager, it opens and manages the sessions between participants and JVB.
+    - **[Prosody](https://github.com/prosody):** An XMPP server where all the other components connect so they can communicate, and linked as the only component not made by the Jitsi team.
+
+### Photoview
+- [Photoview](https://github.com/photoview/photoview#readme) is an actively developed photo & video gallery UI that mantains your directory structure.
+- Features local facial recognition for photo sorting, tiered user account access, and supports RAW files and EXIF parsing.
+- This is another service I highly recommend to anyone with years of family photos languishing on a harddrive.
+- Consists of two services as it requires a SQL database for caching thumbnails, parsed photo data and smaller file versions for download.
+- I have a [MariaDB](https://github.com/MariaDB/mariadb-docker#readme) container for this (phdb in the docker-compose yml).
 
 ### Shinobi
-### Photoview
+- [Shinobi](https://gitlab.com/Shinobi-Systems/Shinobi/-/blob/master/README.md) is a CCTV service for viewing and managing an array of camera streams. </br>
+- I use it as a web UI to remotely view and record an IP camera for checking on the dog. </br?
+- Provides security and privacy peace of mind as I can keep the cheap IP camera blocked from external network and  Shinobi grabs the feed from local network to expose it externally.
+
 ### Heimdall
 - [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
-
