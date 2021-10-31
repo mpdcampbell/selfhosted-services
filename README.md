@@ -1,5 +1,5 @@
 # selfhosted-services
-A summary of my selfhosted services.<br />
+A summary of the services I host.<br />
 All services are sitting behind authelia 2FA with routing via traefik.<br />
 Services are hosted as docker containers on a linux home server.<br />
 Only config file in repo is the docker-compose.yml.<br />
@@ -10,11 +10,12 @@ Only config file in repo is the docker-compose.yml.<br />
 
 ## The Services
 1. [Traefik](#traefik)
-2. [Authelia](#authelia)
-3. [Jitsi](#jitsi)
-4. [Photoview](#photoview)
-5. [Shinobi](#shinobi)
-6. [Heimdall](#heimdall)
+2. [Docker-Socket-Proxy](#docker-socket-proxy)
+3. [Authelia](#authelia)
+4. [Jitsi](#jitsi)
+5. [Photoview](#photoview)
+6. [Shinobi](#shinobi)
+7. [Heimdall](#heimdall)
 
 ### Traefik
 - [Traefik (V2)](https://github.com/traefik/traefik#readme) is a reverse proxy and is the backbone of the set up. <br />
@@ -24,6 +25,11 @@ Only config file in repo is the docker-compose.yml.<br />
 - As well as convenience, Traefik handles security as all traffic is routed through middlewares where requests can be filtered and modified before the reach the service.<br />
 - Main middlewares in this set up are http to https redirect, request rate limiter, a middleware applying range of http security headers and a middleware routing requests through authelia for two factor authentication.<br />
 - A different http security header middleware is define for each service to allow future customisation.
+
+### Docker-Socket-Proxy
+- [Docker-Socket-Proxy](https://github.com/Tecnativa/docker-socket-proxy#readme) a proxy layer for between traefik and the docker socket.
+- Traefik requires access to the docker socket to work and Traefik is exposed to the internet. This means an attack on traefik could grant the attacker root access on the underlying host. 
+- [Recommended](https://doc.traefik.io/traefik/providers/docker/#docker-api-access) by traefik devs, docker-socket-proxy ony allows access to the sections of the docker API that Traefik needs to function.
 
 ### Authelia
 - [Authelia](https://github.com/authelia/authelia#readme) is an authentication server providing two factor authentication for all the services.
