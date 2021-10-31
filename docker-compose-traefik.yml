@@ -1,0 +1,520 @@
+#Version declaration has been deprecated
+
+########################### NETWORKS
+networks:
+  meet.jitsi:
+  t2_proxy:
+    name: t2_proxy
+  default:
+    driver: bridge
+  socket_proxy:
+    name: socket_proxy
+    driver: bridge
+
+########################### SERVICES
+services:
+  traefik:
+    container_name: traefik
+    image: traefik:latest
+    restart: unless-stopped
+    command:
+      - --global.checkNewVersion=true
+      - --global.sendAnonymousUsage=false
+      - --entryPoints.http.address=:80
+      - --entryPoints.https.address=:443
+      - --entrypoints.https.forwardedHeaders.trustedIPs=${TRUSTED_IPS}
+      - --entryPoints.traefik.address=:8080
+      - --api=true
+      - --log=true
+      - --log.level=WARN
+      - --accessLog=true
+      - --accessLog.filePath=/traefik.log
+      - --accessLog.bufferingSize=10
+      - --accessLog.filters.statusCodes=100-599
+      - --providers.docker=true
+      - --providers.docker.endpoint=${SOCKET_PROXY}
+      - --providers.docker.defaultrule=Host(`{{ index .Labels "com.docker.compose.service" }}.${DOMAINNAME}`)
+      - --providers.docker.exposedByDefault=false
+      - --providers.docker.network=t2_proxy
+      - --providers.docker.swarmMode=false
+      - --providers.file.directory=/rules
+      - --providers.file.watch=true # Only works on top level files in the rules folder
+      - --certificatesResolvers.dns-cloudflare.acme.email=${CLOUDFLARE_EMAIL}
+      - --certificatesResolvers.dns-cloudflare.acme.storage=/acme.json
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
+    networks:
+      - t2_proxy
+      - socket_proxy 
+    security_opt:
+      - no-new-privileges:true
+    ports:
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
+    volumes:
+      - ${TRAEFIK_DIR}/rules:/rules 
+      - ${TRAEFIK_DIR}/acme/acme.json:/acme.json  
+      - ${TRAEFIK_DIR}/traefik.log:/traefik.log 
+      - ${DOCKER_DIR}/shared:/shared
+    environment:
+      - CF_API_EMAIL=${CLOUDFLARE_EMAIL}
+      - CF_API_KEY=${CLOUDFLARE_API_KEY}
+    labels:
+      - "traefik.enable=true"
+      # HTTP-to-HTTPS Redirect
+      - "traefik.http.routers.http-catchall.entrypoints=http"
+      - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
+      - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      # HTTP Routers
+      - "traefik.http.routers.traefik-rtr.entrypoints=https"
+      - "traefik.http.routers.traefik-rtr.rule=Host(`traefik.${DOMAINNAME}`)"
+      - "traefik.http.routers.traefik-rtr.tls=true"
+      - "traefik.http.routers.traefik-rtr.tls.domains[0].main=${DOMAINNAME}"
+      - "traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.${DOMAINNAME}"
+      ## Services - API
+      - "traefik.http.routers.traefik-rtr.service=api@internal"
+      ## Middlewares
+      - "traefik.http.routers.traefik-rtr.middlewares=traefik-headers,chain-authelia@file"  
+      - "traefik.http.middlewares.traefik-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
+      - "traefik.http.middlewares.traefik-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
+      - "traefik.http.middlewares.traefik-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.traefik-headers.headers.addvaryheader=true" 
+      - "traefik.http.middlewares.traefik-headers.headers.allowedhosts=traefik.${DOMAINNAME}" 
+      - "traefik.http.middlewares.traefik-headers.headers.hostsproxyheaders=X-Forwarded-Host"
+      - "traefik.http.middlewares.traefik-headers.headers.sslredirect=true"
+      - "traefik.http.middlewares.traefik-headers.headers.sslhost=traefik.${DOMAINNAME}" 
+      - "traefik.http.middlewares.traefik-headers.headers.sslforcehost=true"
+      - "traefik.http.middlewares.traefik-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.traefik-headers.headers.stsseconds=63072000"
+      - "traefik.http.middlewares.traefik-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.traefik-headers.headers.stspreload=true"
+      - "traefik.http.middlewares.traefik-headers.headers.forcestsheader=true"
+      - "traefik.http.middlewares.traefik-headers.headers.framedeny=true"
+      - "traefik.http.middlewares.traefik-headers.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.traefik-headers.headers.browserxssfilter=true"
+      - "traefik.http.middlewares.traefik-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
+      - "traefik.http.middlewares.traefik-headers.headers.referrerpolicy=same-origin"
+      - "traefik.http.middlewares.traefik-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.traefik-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
+
+  # Docker Socket Proxy
+  socket-proxy:
+    container_name: socketProxy
+    image: tecnativa/docker-socket-proxy
+    restart: always
+    networks:
+      socket_proxy:
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    environment:
+      - LOG_LEVEL=info
+      - SEVICES=1
+      - CONTAINERS=1
+      - NETWORKS=1
+      - TASKS=1
+
+  # Heimdall
+  heimdall:
+    container_name: heimdall
+    image: linuxserver/heimdall:latest
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    security_opt:
+      - no-new-privileges:true
+    volumes:
+      - ${HEIMDALL_DIR}:/config
+    environment:
+      - PUID
+      - PGID
+      - TZ
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.heimdall-rtr.entrypoints=https"
+      - "traefik.http.routers.heimdall-rtr.rule=Host(`heimdall.${DOMAINNAME}`) || Host(`${DOMAINNAME}`) || Host(`www.${DOMAINNAME}`)"
+      - "traefik.http.routers.heimdall-rtr.tls=true"
+      - "traefik.http.routers.heimdall-rtr.tls.options=tls-opts@file"
+      # Middlewares
+      - "traefik.http.routers.heimdall-rtr.middlewares=heimdall-redirect@docker,heimdall-headers,chain-authelia@file"
+      - "traefik.http.middlewares.heimdall-redirect.redirectregex.regex=^https?://${DOMAINNAME}/(.*)"
+      - "traefik.http.middlewares.heimdall-redirect.redirectregex.replacement=https://www.${DOMAINNAME}/$${1}"
+      - "traefik.http.middlewares.heimdall-redirect.redirectregex.permanent=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
+      - "traefik.http.middlewares.heimdall-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
+      - "traefik.http.middlewares.heimdall-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.heimdall-headers.headers.addvaryheader=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.allowedhosts=heimdall.${DOMAINNAME},${DOMAINNAME},www.${DOMAINNAME}"
+      - "traefik.http.middlewares.heimdall-headers.headers.hostsproxyheaders=X-Forwarded-Host"
+      - "traefik.http.middlewares.heimdall-headers.headers.sslredirect=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.sslhost=heimdall.${DOMAINNAME}"
+      - "traefik.http.middlewares.heimdall-headers.headers.sslforcehost=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.heimdall-headers.headers.stsseconds=63072000"
+      - "traefik.http.middlewares.heimdall-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.stspreload=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.forcestsheader=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.framedeny=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.browserxssfilter=true"
+      - "traefik.http.middlewares.heimdall-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
+      - "traefik.http.middlewares.heimdall-headers.headers.referrerpolicy=same-origin"
+      - "traefik.http.middlewares.heimdall-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.heimdall-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"        
+      ## HTTP Services
+      - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
+      - "traefik.http.services.heimdall-svc.loadbalancer.server.port=${HEIMDALL_PORT}"
+
+  #Shinobi
+  shinobi:
+    container_name: shinobi
+    image: shinobisystems/shinobi:latest
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ${SHINOBI_DIR}/config:/config
+      - ${SHINOBI_DIR}/customAutoLoad:/home/Shinobi/libs/customAutoLoad
+      - ${SHINOBI_DIR}/database:/var/lib/mysql
+      - ${SHINOBI_STORAGE_DIR}:/home/Shinobi/videos
+      - ${SHINOBI_DIR}/plugins:/home/Shinobi/plugins
+      - ${SHINOBI_STREAM_DIR}:/dev/shm/streams
+    environment:
+      - PGID
+      - PUID
+      - TZ
+    labels:
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.shinobi-rtr.entrypoints=https"
+      - "traefik.http.routers.shinobi-rtr.rule=Host(`shi.${DOMAINNAME}`)"
+      - "traefik.http.routers.shinobi-rtr.tls=true"
+      - "traefik.http.routers.shinobi-rtr.tls.options=tls-opts@file"
+      # Middlewares
+      - "traefik.http.routers.shinobi-rtr.middlewares=shinobi-headers,chain-authelia@file"
+      - "traefik.http.middlewares.shinobi-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
+      - "traefik.http.middlewares.shinobi-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
+      - "traefik.http.middlewares.shinobi-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.shinobi-headers.headers.addvaryheader=true"
+      - "traefik.http.middlewares.shinobi-headers.headers.allowedhosts=shi.${DOMAINNAME}"
+      - "traefik.http.middlewares.shinobi-headers.headers.hostsproxyheaders=X-Forwarded-Host"
+      - "traefik.http.middlewares.shinobi-headers.headers.sslredirect=true"
+      - "traefik.http.middlewares.shinobi-headers.headers.sslhost=shi.${DOMAINNAME}"
+      - "traefik.http.middlewares.shinobi-headers.headers.sslforcehost=true"
+      - "traefik.http.middlewares.shinobi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.shinobi-headers.headers.stsseconds=63072000"
+      - "traefik.http.middlewares.shinobi-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.shinobi-headers.headers.stspreload=true"
+      - "traefik.http.middlewares.shinobi-headers.headers.forcestsheader=true"
+      - "traefik.http.middlewares.shinobi-headers.headers.framedeny=true"
+      - "traefik.http.middlewares.shinobi-headers.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.shinobi-headers.headers.browserxssfilter=true"
+      - "traefik.http.middlewares.shinobi-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
+      - "traefik.http.middlewares.shinobi-headers.headers.referrerpolicy=same-origin"
+      - "traefik.http.middlewares.shinobi-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.shinobi-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
+        ## HTTP Services
+      - "traefik.http.routers.shinobi-rtr.service=shinobi-svc"
+      - "traefik.http.services.shinobi-svc.loadbalancer.server.port=${SHINOBI_PORT}"
+
+  #Photoview
+  photoview:
+    image: viktorstrate/photoview:latest
+    container_name: photoview
+    restart: unless-stopped
+    depends_on:
+      - phdb
+    networks:
+      - t2_proxy
+    volumes:
+      - ${PHOTOVIEW_DIR}/appcache:/app/cache
+      - ${PHOTO_DIR_1}:/${PHOTOVIEW_USER_1}/photos:ro
+      - ${PHOTO_DIR_2}:/${PHOTOVIEW_USER_2}/photos:ro
+    environment:
+      - PGID 
+      - PUID 
+      - TZ
+      - PHOTOVIEW_DATABASE_DRIVER
+      - PHOTOVIEW_MYSQL_URL 
+      - PHOTOVIEW_LISTEN_IP
+      - PHOTOVIEW_LISTEN_PORT
+      - PHOTOVIEW_MEDIA_CACHE=/app/cache
+    labels:
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.photoview-rtr.entrypoints=https"
+      - "traefik.http.routers.photoview-rtr.rule=Host(`photo.${DOMAINNAME}`)"
+      - "traefik.http.routers.photoview-rtr.tls=true"
+      - "traefik.http.routers.photoview-rtr.tls.options=tls-opts@file"
+      # Middlewares
+      - "traefik.http.routers.photoview-rtr.middlewares=photoview-headers,chain-authelia@file"
+      - "traefik.http.middlewares.photoview-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
+      - "traefik.http.middlewares.photoview-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
+      - "traefik.http.middlewares.photoview-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.photoview-headers.headers.addvaryheader=true"
+      - "traefik.http.middlewares.photoview-headers.headers.allowedhosts=photo.${DOMAINNAME}"
+      - "traefik.http.middlewares.photoview-headers.headers.hostsproxyheaders=X-Forwarded-Host"
+      - "traefik.http.middlewares.photoview-headers.headers.sslredirect=true"
+      - "traefik.http.middlewares.photoview-headers.headers.sslhost=photo.${DOMAINNAME}"
+      - "traefik.http.middlewares.photoview-headers.headers.sslforcehost=true"
+      - "traefik.http.middlewares.photoview-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.photoview-headers.headers.stsseconds=63072000"
+      - "traefik.http.middlewares.photoview-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.photoview-headers.headers.stspreload=true"
+      - "traefik.http.middlewares.photoview-headers.headers.forcestsheader=true"
+      - "traefik.http.middlewares.photoview-headers.headers.framedeny=true"
+      - "traefik.http.middlewares.photoview-headers.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.photoview-headers.headers.browserxssfilter=true"
+      - "traefik.http.middlewares.photoview-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
+      - "traefik.http.middlewares.photoview-headers.headers.referrerpolicy=same-origin"
+      - "traefik.http.middlewares.photoview-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.photoview-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
+        ## HTTP Services
+      - "traefik.http.routers.photoview-rtr.service=photoview-svc"
+      - "traefik.http.services.photoview-svc.loadbalancer.server.port=${PHOTOVIEW_LISTEN_PORT}"
+
+  phdb:
+    image: mariadb:10.5
+    container_name: photoviewDB
+    restart: always
+    networks:
+      - t2_proxy 
+    volumes:
+      - ${PHOTOVIEWDB_DIR}:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=${PHOTOVIEW_DB_NAME}
+      - MYSQL_USER=${PHOTOVIEW_DB_USERNAME}
+      - MYSQL_PASSWORD=${PHOTOVIEW_DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD 
+      - PUID
+      - PGID
+      - TZ
+
+  # Authelia
+  authelia:
+    container_name: authelia
+    image: authelia/authelia:latest
+    restart: always
+    networks:
+      - t2_proxy
+    volumes:
+      - ${AUTHELIA_DIR}:/config
+    environment:
+      - TZ
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.authelia-rtr.entrypoints=https"
+      - "traefik.http.routers.authelia-rtr.rule=Host(`authelia.${DOMAINNAME}`)"
+      - "traefik.http.routers.authelia-rtr.tls=true"
+      - "traefik.http.routers.authelia-rtr.tls.options=tls-opts@file"        
+      # Middlewares
+      - "traefik.http.routers.authelia-rtr.middlewares=authelia-headers,chain-authelia@file"
+      - "traefik.http.middlewares.authelia-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
+      - "traefik.http.middlewares.authelia-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
+      - "traefik.http.middlewares.authelia-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.authelia-headers.headers.addvaryheader=true"
+      - "traefik.http.middlewares.authelia-headers.headers.allowedhosts=authelia.${DOMAINNAME}"
+      - "traefik.http.middlewares.authelia-headers.headers.hostsproxyheaders=X-Forwarded-Host"
+      - "traefik.http.middlewares.authelia-headers.headers.sslredirect=true"
+      - "traefik.http.middlewares.authelia-headers.headers.sslhost=authelia.${DOMAINNAME}"
+      - "traefik.http.middlewares.authelia-headers.headers.sslforcehost=true"
+      - "traefik.http.middlewares.authelia-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.authelia-headers.headers.stsseconds=63072000"
+      - "traefik.http.middlewares.authelia-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.authelia-headers.headers.stspreload=true"
+      - "traefik.http.middlewares.authelia-headers.headers.forcestsheader=true"
+      - "traefik.http.middlewares.authelia-headers.headers.framedeny=true"
+      - "traefik.http.middlewares.authelia-headers.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.authelia-headers.headers.browserxssfilter=true"
+      - "traefik.http.middlewares.authelia-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
+      - "traefik.http.middlewares.authelia-headers.headers.referrerpolicy=same-origin"
+      - "traefik.http.middlewares.authelia-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.authelia-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
+      ## HTTP Services
+      - "traefik.http.routers.authelia-rtr.service=authelia-svc"
+      - "traefik.http.services.authelia-svc.loadbalancer.server.port=${AUTHELIA_PORT}"
+
+ # Jitsi frontend
+  jitsi_web:
+    container_name: jitsi
+    image: jitsi/web
+    restart: unless-stopped
+    networks:
+      t2_proxy:
+      meet.jitsi:
+        aliases:
+          - ${XMPP_DOMAIN}
+    volumes:
+      - ${JITSI_DIR}/web:/config
+      - ${JITSI_DIR}/web/letsencrypt:/etc/letsencrypt
+      - ${JITSI_DIR}/transcripts:/usr/share/jitsi-meet/transcripts
+      - ${JITSI_DIR}/images:/usr/share/jitsi-meet/images
+    environment:
+      - ENABLE_HSTS
+      - ENABLE_COLIBRI_WEBSOCKET
+      - ENABLE_XMPP_WEBSOCKET
+      - PUBLIC_URL
+      - TZ
+      - AMPLITUDE_ID
+      - BRIDGE_CHANNEL
+      - CHROME_EXTENSION_BANNER_JSON
+      - CONFIG_EXTERNAL_CONNECT
+      - ENABLE_LIPSYNC
+      - ENABLE_NO_AUDIO_DETECTION
+      - ENABLE_P2P
+      - ENABLE_PREJOIN_PAGE
+      - ENABLE_WELCOME_PAGE
+      - ENABLE_CLOSE_PAGE
+      - ENABLE_REQUIRE_DISPLAY_NAME
+      - ENABLE_TALK_WHILE_MUTED
+      - ENABLE_NOISY_MIC_DETECTION
+      - ENABLE_REACTIONS
+      - XMPP_AUTH_DOMAIN
+      - XMPP_BOSH_URL_BASE
+      - XMPP_DOMAIN
+      - XMPP_GUEST_DOMAIN
+      - XMPP_MUC_DOMAIN
+      - XMPP_RECORDER_DOMAIN
+    labels:
+      - "traefik.enable=true"
+    ## HTTP Routers
+      - "traefik.http.routers.jitsi-rtr.entrypoints=https"
+      - "traefik.http.routers.jitsi-rtr.rule=Host(`jitsi.${DOMAINNAME}`)"
+      - "traefik.http.routers.jitsi-rtr.tls=true"
+      - "traefik.http.routers.jitsi-rtr.tls.options=tls-opts@file"
+     # Middlewares
+      - "traefik.http.routers.jitsi-rtr.middlewares=jitsi-headers,chain-authelia-no-cf@file"
+      - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
+      - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
+      - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolmaxage=100"
+      - "traefik.http.middlewares.jitsi-headers.headers.allowedhosts=jitsi.${DOMAINNAME}"
+      - "traefik.http.middlewares.jitsi-headers.headers.hostsproxyheaders=X-Forwarded-Host"
+      - "traefik.http.middlewares.jitsi-headers.headers.sslredirect=true"
+      - "traefik.http.middlewares.jitsi-headers.headers.sslhost=jitsi.${DOMAINNAME}"
+      - "traefik.http.middlewares.jitsi-headers.headers.sslforcehost=true"
+      - "traefik.http.middlewares.jitsi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.jitsi-headers.headers.stsseconds=63072000"
+      - "traefik.http.middlewares.jitsi-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.jitsi-headers.headers.stspreload=true"
+      - "traefik.http.middlewares.jitsi-headers.headers.forcestsheader=true"
+      - "traefik.http.middlewares.jitsi-headers.headers.framedeny=true"
+      - "traefik.http.middlewares.jitsi-headers.headers.contenttypenosniff=true"
+      - "traefik.http.middlewares.jitsi-headers.headers.browserxssfilter=true"
+      - "traefik.http.middlewares.jitsi-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
+      - "traefik.http.middlewares.jitsi-headers.headers.referrerpolicy=same-origin"
+      - "traefik.http.middlewares.jitsi-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
+      ## HTTP Services
+      - "traefik.http.routers.jitsi-rtr.service=jitsi-svc"
+      - "traefik.http.services.jitsi-svc.loadbalancer.server.port=80"
+      ## Websocket proxy attempt
+      - "traefik.http.routers.jitsi-websocket1-https.rule=Host(`jitsi.${DOMAINNAME}`) && Path(`/xmpp-websocket`)"
+      - "traefik.http.routers.jitsi-websocket1-https.entrypoints=https"
+      - "traefik.http.routers.jitsi-websocket1-https.service=jitsi-websocket1"
+      - "traefik.http.services.jitsi-websocket1.loadbalancer.server.port=${HTTPS_PORT}"
+      - "traefik.http.routers.jitsi-websocket2-https.rule=Host(`jitsi.${DOMAINNAME}`) && Path(`/colibri-ws`)"
+      - "traefik.http.routers.jitsi-websocket2-https.entrypoints=https"
+      - "traefik.http.routers.jitsi-websocket2-https.service=jitsi-websocket2"
+      - "traefik.http.services.jitsi-websocket2.loadbalancer.server.port=${HTTPS_PORT}"
+  
+  # XMPP server
+  prosody:
+    container_name: prosody
+    image: jitsi/prosody
+    restart: unless-stopped
+    expose:
+      - ${PROSODY_PORT_1} 
+      - ${PROSODY_PORT_2} 
+      - ${PROSODY_PORT_3} 
+    volumes:
+      - ${JITSI_DIR}/prosody:/config
+    environment:
+      - ENABLE_LOBBY
+      - GLOBAL_MODULES
+      - GLOBAL_CONFIG
+      - PUBLIC_URL
+      - XMPP_DOMAIN
+      - XMPP_AUTH_DOMAIN
+      - XMPP_GUEST_DOMAIN
+      - XMPP_MUC_DOMAIN
+      - XMPP_INTERNAL_MUC_DOMAIN
+      - XMPP_MODULES
+      - XMPP_MUC_MODULES
+      - XMPP_INTERNAL_MUC_MODULES
+      - XMPP_RECORDER_DOMAIN
+      - XMPP_CROSS_DOMAIN
+      - JICOFO_COMPONENT_SECRET
+      - JICOFO_AUTH_USER
+      - JICOFO_AUTH_PASSWORD
+      - JVB_AUTH_USER
+      - JVB_AUTH_PASSWORD
+      - LOG_LEVEL
+      - TZ
+    networks:
+      meet.jitsi:
+        aliases:
+          - ${XMPP_SERVER}
+
+  # Focus component
+  jicofo:
+    container_name: jicofo
+    image: jitsi/jicofo
+    restart: unless-stopped
+    depends_on:
+      - prosody
+    volumes:
+      - ${JITSI_DIR}/jicofo:/config
+    environment:
+      - JICOFO_COMPONENT_SECRET
+      - JICOFO_AUTH_USER
+      - JICOFO_AUTH_PASSWORD
+      - JVB_BREWERY_MUC
+      - TZ
+      - XMPP_DOMAIN
+      - XMPP_AUTH_DOMAIN
+      - XMPP_INTERNAL_MUC_DOMAIN
+      - XMPP_MUC_DOMAIN
+      - XMPP_SERVER
+    networks:
+      meet.jitsi:
+              
+  # Video bridge
+  jvb:
+    container_name: jvb
+    image: jitsi/jvb
+    restart: unless-stopped
+    depends_on:
+      - prosody
+    ports:
+      - '${JVB_PORT}:${JVB_PORT}/udp'
+      - '${JVB_TCP_PORT}:${JVB_TCP_PORT}'
+    volumes:
+      - ${JITSI_DIR}/jvb:/config
+    environment:      
+      - DOCKER_HOST_ADDRESS
+      - XMPP_AUTH_DOMAIN
+      - XMPP_INTERNAL_MUC_DOMAIN
+      - XMPP_SERVER
+      - JVB_AUTH_USER
+      - JVB_AUTH_PASSWORD
+      - JVB_BREWERY_MUC
+      - JVB_PORT
+      - JVB_TCP_HARVESTER_DISABLED
+      - JVB_TCP_PORT
+      - JVB_STUN_SERVERS
+      - PUBLIC_URL
+      - TZ
+    networks:
+      meet.jitsi:
