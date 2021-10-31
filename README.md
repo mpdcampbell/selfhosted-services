@@ -8,6 +8,8 @@ Only config file in repo is the docker-compose.yml.<br />
 <img align="center" src="/images/heimdallScreenshot.png" alt="Hosted services" width="380"><br \>
 </p>
 
+</br>
+
 ## The Services
 1. [Traefik](#traefik)
 2. [Docker-Socket-Proxy](#docker-socket-proxy)
@@ -63,3 +65,13 @@ Only config file in repo is the docker-compose.yml.<br />
 
 ### Heimdall
 - [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
+
+</br>
+
+## Art
+<p float="left">
+  <img src="/images/dogCamIcon.png" alt="DogCam Icon" width="80" />
+  <img src="/images/photoviewIcon.png" alt="PhotoView Icon" width="80" /> 
+  <img src="/images/jitsiIcon.png" alt="Jitsi Icon" width="80" /> Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+</br>
+  <img src="/images/traefikIcon.png" alt="DogCam Icon" width="80" /> Road Icon made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
