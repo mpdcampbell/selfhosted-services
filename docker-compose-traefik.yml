@@ -38,7 +38,7 @@ services:
       - --providers.docker.network=t2_proxy
       - --providers.docker.swarmMode=false
       - --providers.file.directory=/rules
-      - --providers.file.watch=true # Only works on top level files in the rules folder
+      - --providers.file.watch=true
       - --certificatesResolvers.dns-cloudflare.acme.email=${CLOUDFLARE_EMAIL}
       - --certificatesResolvers.dns-cloudflare.acme.storage=/acme.json
       - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
@@ -75,6 +75,7 @@ services:
       - "traefik.http.routers.http-catchall.rule=HostRegexp(`{host:.+}`)"
       - "traefik.http.routers.http-catchall.middlewares=redirect-to-https"
       - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true"
       # HTTP Routers
       - "traefik.http.routers.traefik-rtr.entrypoints=https"
       - "traefik.http.routers.traefik-rtr.rule=Host(`traefik.${DOMAINNAME}`)"
@@ -85,29 +86,13 @@ services:
       - "traefik.http.routers.traefik-rtr.service=api@internal"
       ## Middlewares
       - "traefik.http.routers.traefik-rtr.middlewares=traefik-headers,chain-authelia@file"  
-      - "traefik.http.middlewares.traefik-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
       - "traefik.http.middlewares.traefik-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
-      - "traefik.http.middlewares.traefik-headers.headers.accesscontrolmaxage=100"
-      - "traefik.http.middlewares.traefik-headers.headers.addvaryheader=true" 
       - "traefik.http.middlewares.traefik-headers.headers.allowedhosts=traefik.${DOMAINNAME}" 
-      - "traefik.http.middlewares.traefik-headers.headers.hostsproxyheaders=X-Forwarded-Host"
-      - "traefik.http.middlewares.traefik-headers.headers.sslredirect=true"
-      - "traefik.http.middlewares.traefik-headers.headers.sslhost=traefik.${DOMAINNAME}" 
-      - "traefik.http.middlewares.traefik-headers.headers.sslforcehost=true"
       - "traefik.http.middlewares.traefik-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.traefik-headers.headers.stsseconds=63072000"
-      - "traefik.http.middlewares.traefik-headers.headers.stsincludesubdomains=true"
-      - "traefik.http.middlewares.traefik-headers.headers.stspreload=true"
-      - "traefik.http.middlewares.traefik-headers.headers.forcestsheader=true"
-      - "traefik.http.middlewares.traefik-headers.headers.framedeny=true"
-      - "traefik.http.middlewares.traefik-headers.headers.contenttypenosniff=true"
-      - "traefik.http.middlewares.traefik-headers.headers.browserxssfilter=true"
       - "traefik.http.middlewares.traefik-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.traefik-headers.headers.referrerpolicy=same-origin"
       - "traefik.http.middlewares.traefik-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
-      - "traefik.http.middlewares.traefik-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
 
-  # Docker Socket Proxy
+# Docker Socket Proxy
   socket-proxy:
     container_name: socketProxy
     image: tecnativa/docker-socket-proxy
@@ -150,32 +135,15 @@ services:
       - "traefik.http.middlewares.heimdall-redirect.redirectregex.regex=^https?://${DOMAINNAME}/(.*)"
       - "traefik.http.middlewares.heimdall-redirect.redirectregex.replacement=https://www.${DOMAINNAME}/$${1}"
       - "traefik.http.middlewares.heimdall-redirect.redirectregex.permanent=true"
-      - "traefik.http.middlewares.heimdall-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
       - "traefik.http.middlewares.heimdall-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
-      - "traefik.http.middlewares.heimdall-headers.headers.accesscontrolmaxage=100"
-      - "traefik.http.middlewares.heimdall-headers.headers.addvaryheader=true"
       - "traefik.http.middlewares.heimdall-headers.headers.allowedhosts=heimdall.${DOMAINNAME},${DOMAINNAME},www.${DOMAINNAME}"
-      - "traefik.http.middlewares.heimdall-headers.headers.hostsproxyheaders=X-Forwarded-Host"
-      - "traefik.http.middlewares.heimdall-headers.headers.sslredirect=true"
-      - "traefik.http.middlewares.heimdall-headers.headers.sslhost=heimdall.${DOMAINNAME}"
-      - "traefik.http.middlewares.heimdall-headers.headers.sslforcehost=true"
       - "traefik.http.middlewares.heimdall-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.heimdall-headers.headers.stsseconds=63072000"
-      - "traefik.http.middlewares.heimdall-headers.headers.stsincludesubdomains=true"
-      - "traefik.http.middlewares.heimdall-headers.headers.stspreload=true"
-      - "traefik.http.middlewares.heimdall-headers.headers.forcestsheader=true"
-      - "traefik.http.middlewares.heimdall-headers.headers.framedeny=true"
-      - "traefik.http.middlewares.heimdall-headers.headers.contenttypenosniff=true"
-      - "traefik.http.middlewares.heimdall-headers.headers.browserxssfilter=true"
       - "traefik.http.middlewares.heimdall-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.heimdall-headers.headers.referrerpolicy=same-origin"
       - "traefik.http.middlewares.heimdall-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
-      - "traefik.http.middlewares.heimdall-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"        
       ## HTTP Services
       - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
       - "traefik.http.services.heimdall-svc.loadbalancer.server.port=${HEIMDALL_PORT}"
 
-  #Shinobi
   shinobi:
     container_name: shinobi
     image: shinobisystems/shinobi:latest
@@ -204,32 +172,15 @@ services:
       - "traefik.http.routers.shinobi-rtr.tls.options=tls-opts@file"
       # Middlewares
       - "traefik.http.routers.shinobi-rtr.middlewares=shinobi-headers,chain-authelia@file"
-      - "traefik.http.middlewares.shinobi-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
       - "traefik.http.middlewares.shinobi-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
-      - "traefik.http.middlewares.shinobi-headers.headers.accesscontrolmaxage=100"
-      - "traefik.http.middlewares.shinobi-headers.headers.addvaryheader=true"
       - "traefik.http.middlewares.shinobi-headers.headers.allowedhosts=shi.${DOMAINNAME}"
-      - "traefik.http.middlewares.shinobi-headers.headers.hostsproxyheaders=X-Forwarded-Host"
-      - "traefik.http.middlewares.shinobi-headers.headers.sslredirect=true"
-      - "traefik.http.middlewares.shinobi-headers.headers.sslhost=shi.${DOMAINNAME}"
-      - "traefik.http.middlewares.shinobi-headers.headers.sslforcehost=true"
       - "traefik.http.middlewares.shinobi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.shinobi-headers.headers.stsseconds=63072000"
-      - "traefik.http.middlewares.shinobi-headers.headers.stsincludesubdomains=true"
-      - "traefik.http.middlewares.shinobi-headers.headers.stspreload=true"
-      - "traefik.http.middlewares.shinobi-headers.headers.forcestsheader=true"
-      - "traefik.http.middlewares.shinobi-headers.headers.framedeny=true"
-      - "traefik.http.middlewares.shinobi-headers.headers.contenttypenosniff=true"
-      - "traefik.http.middlewares.shinobi-headers.headers.browserxssfilter=true"
       - "traefik.http.middlewares.shinobi-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.shinobi-headers.headers.referrerpolicy=same-origin"
       - "traefik.http.middlewares.shinobi-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
-      - "traefik.http.middlewares.shinobi-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
         ## HTTP Services
       - "traefik.http.routers.shinobi-rtr.service=shinobi-svc"
       - "traefik.http.services.shinobi-svc.loadbalancer.server.port=${SHINOBI_PORT}"
 
-  #Photoview
   photoview:
     image: viktorstrate/photoview:latest
     container_name: photoview
@@ -260,27 +211,11 @@ services:
       - "traefik.http.routers.photoview-rtr.tls.options=tls-opts@file"
       # Middlewares
       - "traefik.http.routers.photoview-rtr.middlewares=photoview-headers,chain-authelia@file"
-      - "traefik.http.middlewares.photoview-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
       - "traefik.http.middlewares.photoview-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
-      - "traefik.http.middlewares.photoview-headers.headers.accesscontrolmaxage=100"
-      - "traefik.http.middlewares.photoview-headers.headers.addvaryheader=true"
       - "traefik.http.middlewares.photoview-headers.headers.allowedhosts=photo.${DOMAINNAME}"
-      - "traefik.http.middlewares.photoview-headers.headers.hostsproxyheaders=X-Forwarded-Host"
-      - "traefik.http.middlewares.photoview-headers.headers.sslredirect=true"
-      - "traefik.http.middlewares.photoview-headers.headers.sslhost=photo.${DOMAINNAME}"
-      - "traefik.http.middlewares.photoview-headers.headers.sslforcehost=true"
       - "traefik.http.middlewares.photoview-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.photoview-headers.headers.stsseconds=63072000"
-      - "traefik.http.middlewares.photoview-headers.headers.stsincludesubdomains=true"
-      - "traefik.http.middlewares.photoview-headers.headers.stspreload=true"
-      - "traefik.http.middlewares.photoview-headers.headers.forcestsheader=true"
-      - "traefik.http.middlewares.photoview-headers.headers.framedeny=true"
-      - "traefik.http.middlewares.photoview-headers.headers.contenttypenosniff=true"
-      - "traefik.http.middlewares.photoview-headers.headers.browserxssfilter=true"
       - "traefik.http.middlewares.photoview-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.photoview-headers.headers.referrerpolicy=same-origin"
       - "traefik.http.middlewares.photoview-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
-      - "traefik.http.middlewares.photoview-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
         ## HTTP Services
       - "traefik.http.routers.photoview-rtr.service=photoview-svc"
       - "traefik.http.services.photoview-svc.loadbalancer.server.port=${PHOTOVIEW_LISTEN_PORT}"
@@ -322,27 +257,11 @@ services:
       - "traefik.http.routers.authelia-rtr.tls.options=tls-opts@file"        
       # Middlewares
       - "traefik.http.routers.authelia-rtr.middlewares=authelia-headers,chain-authelia@file"
-      - "traefik.http.middlewares.authelia-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
       - "traefik.http.middlewares.authelia-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
-      - "traefik.http.middlewares.authelia-headers.headers.accesscontrolmaxage=100"
-      - "traefik.http.middlewares.authelia-headers.headers.addvaryheader=true"
       - "traefik.http.middlewares.authelia-headers.headers.allowedhosts=authelia.${DOMAINNAME}"
-      - "traefik.http.middlewares.authelia-headers.headers.hostsproxyheaders=X-Forwarded-Host"
-      - "traefik.http.middlewares.authelia-headers.headers.sslredirect=true"
-      - "traefik.http.middlewares.authelia-headers.headers.sslhost=authelia.${DOMAINNAME}"
-      - "traefik.http.middlewares.authelia-headers.headers.sslforcehost=true"
       - "traefik.http.middlewares.authelia-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.authelia-headers.headers.stsseconds=63072000"
-      - "traefik.http.middlewares.authelia-headers.headers.stsincludesubdomains=true"
-      - "traefik.http.middlewares.authelia-headers.headers.stspreload=true"
-      - "traefik.http.middlewares.authelia-headers.headers.forcestsheader=true"
-      - "traefik.http.middlewares.authelia-headers.headers.framedeny=true"
-      - "traefik.http.middlewares.authelia-headers.headers.contenttypenosniff=true"
-      - "traefik.http.middlewares.authelia-headers.headers.browserxssfilter=true"
       - "traefik.http.middlewares.authelia-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.authelia-headers.headers.referrerpolicy=same-origin"
       - "traefik.http.middlewares.authelia-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
-      - "traefik.http.middlewares.authelia-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
       ## HTTP Services
       - "traefik.http.routers.authelia-rtr.service=authelia-svc"
       - "traefik.http.services.authelia-svc.loadbalancer.server.port=${AUTHELIA_PORT}"
@@ -397,29 +316,14 @@ services:
       - "traefik.http.routers.jitsi-rtr.tls.options=tls-opts@file"
      # Middlewares
       - "traefik.http.routers.jitsi-rtr.middlewares=jitsi-headers,chain-authelia-no-cf@file"
-      - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolallowmethods=GET, OPTIONS, PUT"
       - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
-      - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolmaxage=100"
       - "traefik.http.middlewares.jitsi-headers.headers.allowedhosts=jitsi.${DOMAINNAME}"
-      - "traefik.http.middlewares.jitsi-headers.headers.hostsproxyheaders=X-Forwarded-Host"
-      - "traefik.http.middlewares.jitsi-headers.headers.sslredirect=true"
-      - "traefik.http.middlewares.jitsi-headers.headers.sslhost=jitsi.${DOMAINNAME}"
-      - "traefik.http.middlewares.jitsi-headers.headers.sslforcehost=true"
       - "traefik.http.middlewares.jitsi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.jitsi-headers.headers.stsseconds=63072000"
-      - "traefik.http.middlewares.jitsi-headers.headers.stsincludesubdomains=true"
-      - "traefik.http.middlewares.jitsi-headers.headers.stspreload=true"
-      - "traefik.http.middlewares.jitsi-headers.headers.forcestsheader=true"
-      - "traefik.http.middlewares.jitsi-headers.headers.framedeny=true"
-      - "traefik.http.middlewares.jitsi-headers.headers.contenttypenosniff=true"
-      - "traefik.http.middlewares.jitsi-headers.headers.browserxssfilter=true"
-      - "traefik.http.middlewares.jitsi-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.jitsi-headers.headers.referrerpolicy=same-origin"
-      - "traefik.http.middlewares.jitsi-headers.headers.customresponseheaders.X-Robots-Tag=none,noarchive,nosnippet,notranslate,noimageindex,"
+        ##- "traefik.http.middlewares.jitsi-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
       ## HTTP Services
       - "traefik.http.routers.jitsi-rtr.service=jitsi-svc"
       - "traefik.http.services.jitsi-svc.loadbalancer.server.port=80"
-      ## Websocket 
+      ## Websocket proxy attempt
       - "traefik.http.routers.jitsi-websocket1-https.rule=Host(`jitsi.${DOMAINNAME}`) && Path(`/xmpp-websocket`)"
       - "traefik.http.routers.jitsi-websocket1-https.entrypoints=https"
       - "traefik.http.routers.jitsi-websocket1-https.service=jitsi-websocket1"
