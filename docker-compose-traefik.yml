@@ -319,7 +319,6 @@ services:
       - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.allowedhosts=jitsi.${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-        ##- "traefik.http.middlewares.jitsi-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
       ## HTTP Services
       - "traefik.http.routers.jitsi-rtr.service=jitsi-svc"
       - "traefik.http.services.jitsi-svc.loadbalancer.server.port=80"
