@@ -90,7 +90,7 @@ services:
       - "traefik.http.middlewares.traefik-headers.headers.allowedhosts=traefik.${DOMAINNAME}" 
       - "traefik.http.middlewares.traefik-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.traefik-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.traefik-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.traefik-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
 
 # Docker Socket Proxy
   socket-proxy:
@@ -139,7 +139,7 @@ services:
       - "traefik.http.middlewares.heimdall-headers.headers.allowedhosts=heimdall.${DOMAINNAME},${DOMAINNAME},www.${DOMAINNAME}"
       - "traefik.http.middlewares.heimdall-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.heimdall-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.heimdall-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.heimdall-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
       ## HTTP Services
       - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
       - "traefik.http.services.heimdall-svc.loadbalancer.server.port=${HEIMDALL_PORT}"
@@ -176,7 +176,7 @@ services:
       - "traefik.http.middlewares.shinobi-headers.headers.allowedhosts=shi.${DOMAINNAME}"
       - "traefik.http.middlewares.shinobi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.shinobi-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.shinobi-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.shinobi-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
         ## HTTP Services
       - "traefik.http.routers.shinobi-rtr.service=shinobi-svc"
       - "traefik.http.services.shinobi-svc.loadbalancer.server.port=${SHINOBI_PORT}"
@@ -215,7 +215,7 @@ services:
       - "traefik.http.middlewares.photoview-headers.headers.allowedhosts=photo.${DOMAINNAME}"
       - "traefik.http.middlewares.photoview-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.photoview-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.photoview-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.photoview-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
         ## HTTP Services
       - "traefik.http.routers.photoview-rtr.service=photoview-svc"
       - "traefik.http.services.photoview-svc.loadbalancer.server.port=${PHOTOVIEW_LISTEN_PORT}"
@@ -261,7 +261,7 @@ services:
       - "traefik.http.middlewares.authelia-headers.headers.allowedhosts=authelia.${DOMAINNAME}"
       - "traefik.http.middlewares.authelia-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.authelia-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.authelia-headers.headers.featurepolicy=camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; vr 'none';"
+      - "traefik.http.middlewares.authelia-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
       ## HTTP Services
       - "traefik.http.routers.authelia-rtr.service=authelia-svc"
       - "traefik.http.services.authelia-svc.loadbalancer.server.port=${AUTHELIA_PORT}"
@@ -319,6 +319,7 @@ services:
       - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.allowedhosts=jitsi.${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.jitsi-headers.headers.permissionsPolicy=ambient-light-sensor 'self'; camera 'self' geolocation 'none'; microphone 'self'; payment 'none'; usb 'none'; interest-cohort 'none'"
       ## HTTP Services
       - "traefik.http.routers.jitsi-rtr.service=jitsi-svc"
       - "traefik.http.services.jitsi-svc.loadbalancer.server.port=80"
