@@ -89,7 +89,6 @@ services:
       - "traefik.http.middlewares.traefik-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.traefik-headers.headers.allowedhosts=traefik.${DOMAINNAME}" 
       - "traefik.http.middlewares.traefik-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-        #- "traefik.http.middlewares.traefik-headers.headers.contentsecuritypolicy= default-src 'none' "
       - "traefik.http.middlewares.traefik-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
 
 # Docker Socket Proxy
