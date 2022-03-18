@@ -8,6 +8,8 @@ Only config file in repo is the docker-compose.yml.<br />
 <img align="center" src="/images/heimdallScreenshot.png" alt="Hosted services" width="380"><br \>
 </p>
 
+</br>
+
 ## The Services
 1. [Traefik](#traefik)
 2. [Docker-Socket-Proxy](#docker-socket-proxy)
@@ -29,7 +31,7 @@ Only config file in repo is the docker-compose.yml.<br />
 ### Docker-Socket-Proxy
 - [Docker-Socket-Proxy](https://github.com/Tecnativa/docker-socket-proxy#readme) a proxy layer for between traefik and the docker socket.
 - Traefik requires access to the docker socket to work and Traefik is exposed to the internet. This means an attack on traefik could grant the attacker root access on the underlying host. 
-- [Recommended](https://doc.traefik.io/traefik/providers/docker/#docker-api-access) by traefik devs, docker-socket-proxy ony allows access to the sections of the docker API that Traefik needs to function.
+- [Recommended](https://doc.traefik.io/traefik/providers/docker/#docker-api-access) by traefik devs, docker-socket-proxy only allows access to the sections of the docker API that Traefik needs to function.
 
 ### Authelia
 - [Authelia](https://github.com/authelia/authelia#readme) is an authentication server providing two factor authentication for all the services.
@@ -58,8 +60,18 @@ Only config file in repo is the docker-compose.yml.<br />
 
 ### Shinobi
 - [Shinobi](https://gitlab.com/Shinobi-Systems/Shinobi/-/blob/master/README.md) is a CCTV service for viewing and managing an array of camera streams. </br>
-- I use it as a web UI to remotely view and record an IP camera for checking on the dog. </br?
-- Provides security and privacy peace of mind as I can keep the cheap IP camera blocked from external network and  Shinobi grabs the feed from local network to expose it externally.
+- I use it as a web UI to remotely view and record an IP camera for checking on the dog. </br>
+- Provides security and privacy peace of mind as I can keep the cheap IP camera blocked from external network while Shinobi grabs the feed from local network to expose it externally.
 
 ### Heimdall
 - [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
+
+</br>
+
+## Art
+<p float="left">
+  <img src="/images/dogCamIcon.png" alt="DogCam Icon" width="80" />
+  <img src="/images/photoviewIcon.png" alt="PhotoView Icon" width="80" /> 
+  <img src="/images/jitsiIcon.png" alt="Jitsi Icon" width="80" /> Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+</br>
+  <img src="/images/traefikIcon.png" alt="DogCam Icon" width="80" /> Road Icon made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
