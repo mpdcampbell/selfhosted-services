@@ -16,8 +16,9 @@ Only config file in repo is the docker-compose.yml.<br />
 3. [Authelia](#authelia)
 4. [Jitsi](#jitsi)
 5. [Photoview](#photoview)
-6. [Shinobi](#shinobi)
-7. [Heimdall](#heimdall)
+6. [Wishlist](#wishlist)
+7. [Shinobi](#shinobi)
+8. [Heimdall](#heimdall)
 
 ### Traefik
 - [Traefik (V2)](https://github.com/traefik/traefik#readme) is a reverse proxy and is the backbone of the set up. <br />
@@ -51,6 +52,12 @@ Only config file in repo is the docker-compose.yml.<br />
     - **Jitsi Conference Focus (Jicofo):** Conference manager, it opens and manages the sessions between participants and JVB.
     - **[Prosody](https://github.com/prosody):** An XMPP server where all the other components connect so they can communicate, and linked as the only component not made by the Jitsi team.
 
+### Wishlist
+- [Wishlist](https://github.com/Wingysam/Christmas-Community#readme) is a private Amazon wishlist alternative (actually called Christmas Community)
+- Supports seperate user accounts with basic user & password, then all users wishlists visible to everyone.
+- For supported websites (30ish sites) Users can add items to their wishlist with the product url and the service grabs the product image, name and price.
+- Otherwise image, name and price can be input manually.
+
 ### Photoview
 - [Photoview](https://github.com/photoview/photoview#readme) is an actively developed photo & video gallery UI that mantains your directory structure.
 - Features local facial recognition for photo sorting, tiered user account access, and supports RAW files and EXIF parsing.
@@ -72,6 +79,7 @@ Only config file in repo is the docker-compose.yml.<br />
 <p float="left">
   <img src="/images/dogCamIcon.png" alt="DogCam Icon" width="80" />
   <img src="/images/photoviewIcon.png" alt="PhotoView Icon" width="80" /> 
-  <img src="/images/jitsiIcon.png" alt="Jitsi Icon" width="80" /> Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+  <img src="/images/jitsiIcon.png" alt="Jitsi Icon" width="80" />
+  <img src="/images/wishlistIcon.png" alt="Wishlist Icon" width="80" /> Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
 </br>
   <img src="/images/traefikIcon.png" alt="DogCam Icon" width="80" /> Road Icon made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
