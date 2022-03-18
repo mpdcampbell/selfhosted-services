@@ -143,6 +143,45 @@ services:
       - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
       - "traefik.http.services.heimdall-svc.loadbalancer.server.port=${HEIMDALL_PORT}"
   
+  wishlist:
+    container_name: wishlist
+    image: wingysam/christmas-community:latest
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    volumes:
+      - ${WISHLIST_DIR}/data:/data
+      - ${WISHLIST_DIR}/img:/usr/src/app/static/img
+      - ${WISHLIST_DIR}/css/main.css:/usr/src/app/static/css/main.css #Fix title bar spacing
+    environment:
+      - PUID
+      - PGID
+      - TZ
+      - BULMASWATCH
+      - PORT=${WISHLIST_PORT}
+      - DB_EXPOSE_PORT=${WISHLIST_DB_PORT}
+      - SMILE=${WISHLIST_SMILE}
+      - SINGLE_LIST=${SINGLE_LIST}
+      - SITE_TITLE=${WISHLIST_SITE_TITLE}
+      - LISTS_PUBLIC=${WISHLIST_LISTS_PUBLIC}
+    labels:
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.wishlist-rtr.entrypoints=https"
+      - "traefik.http.routers.wishlist-rtr.rule=Host(`wishlist.${DOMAINNAME}`)"
+      - "traefik.http.routers.wishlist-rtr.tls=true"
+      - "traefik.http.routers.wishlist-rtr.tls.options=tls-opts@file"
+      # Middlewares
+      - "traefik.http.routers.wishlist-rtr.middlewares=wishlist-headers,chain-authelia@file"
+      - "traefik.http.middlewares.wishlist-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
+      - "traefik.http.middlewares.wishlist-headers.headers.allowedhosts=wishlist.${DOMAINNAME}"
+      - "traefik.http.middlewares.wishlist-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.wishlist-headers.headers.contentsecuritypolicy= default-src 'none'; font-src 'self' https://fonts.gstatic.com; form-action 'self'; img-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+      - "traefik.http.middlewares.wishlist-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
+         ## HTTP Services
+      - "traefik.http.routers.wishlist-rtr.service=wishlist-svc"
+      - "traefik.http.services.wishlist-svc.loadbalancer.server.port=${WISHLIST_PORT}"
+
   shinobi:
     container_name: shinobi
     image: shinobisystems/shinobi:latest
