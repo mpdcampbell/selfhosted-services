@@ -16,17 +16,17 @@ Only config file in repo is the docker-compose.yml.<br />
 3. [Authelia](#authelia)
 4. [Jitsi](#jitsi)
 5. [Photoview](#photoview)
-6. [Wishlist](#wishlist)
-7. [Shinobi](#shinobi)
+6. [Wishlist (Christmas-Community)](#wishlist-christmas-community)
+7. [DogCam (Shinobi)](#dogcam-shinobi)
 8. [Heimdall](#heimdall)
 
 ### Traefik
-- [Traefik (V2)](https://github.com/traefik/traefik#readme) is a reverse proxy and is the backbone of the set up. <br />
-- Traefik sits between the services and the outside world (specifically http and https ports 80 and 443).<br />
-- Each service has a corresponding subdomain registered at the DNS and Traefik routes each subdomain request to the correct service.<br />
-- This allows traffic to *service.example.com* to access the service without opening the service external port on the network.<br />
-- As well as convenience, Traefik handles security as all traffic is routed through middlewares where requests can be filtered and modified before the reach the service.<br />
-- Main middlewares in this set up are http to https redirect, request rate limiter, a middleware applying range of http security headers and a middleware routing requests through authelia for two factor authentication.<br />
+- [Traefik (V2)](https://github.com/traefik/traefik#readme) is a reverse proxy and is the backbone of the set up. 
+- Traefik sits between the services and the outside world (specifically http and https ports 80 and 443).
+- Each service has a corresponding subdomain registered at the DNS and Traefik routes each subdomain request to the correct service.
+- This allows traffic to *service.example.com* to access the service without opening the service external port on the network.
+- As well as convenience, Traefik handles security as all traffic is routed through middlewares where requests can be filtered and modified before they reach the service.
+- Main middlewares in this set up are http to https redirect, request rate limiter, a middleware applying range of http security headers and a middleware routing requests through authelia for two factor authentication.
 - A different http security header middleware is define for each service to allow future customisation.
 
 ### Docker-Socket-Proxy
@@ -43,17 +43,17 @@ Only config file in repo is the docker-compose.yml.<br />
 </p>
 
 ### Jitsi
-- [Jitsi](https://github.com/jitsi/jitsi-meet#readme) is a full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.</br> 
-- Setting this up during the pandemic has been huge quality of life upgrade over Zoom, I highly recommend it. </br>
-- The bulk of my docker-compose yml, Jitsi consists of four services working together. </br>
+- [Jitsi](https://github.com/jitsi/jitsi-meet#readme) is a full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.
+- Setting this up during the pandemic has been huge quality of life upgrade over Zoom, I highly recommend it. 
+- The bulk of my docker-compose yml, Jitsi consists of four services working together. 
     - **Jitsi Meet (Jitsi_web):** The frontend interface for Jitsi. 
     - **Jitsi Videobridge (JVB):** The traffic controller, a server that routes video streams between participants
     - **Jitsi Conference Focus (Jicofo):** Conference manager, it opens and manages the sessions between participants and JVB.
     - **[Prosody](https://github.com/prosody):** An XMPP server where all the other components connect so they can communicate, and linked as the only component not made by the Jitsi team.
 
-### Wishlist
-- [Wishlist](https://github.com/Wingysam/Christmas-Community#readme) is a private Amazon wishlist alternative (actually called Christmas Community)
-- Supports seperate user accounts with basic user & password, then all users wishlists visible to everyone.
+### Wishlist (Christmas-community)
+- [Christmas-community](https://github.com/Wingysam/Christmas-Community#readme) is a private Amazon wishlist alternative.
+- Supports seperate user accounts with basic user & password auth, with all wishlists visible to all users.
 - Users can add items to their wishlist with the product url and for supported websites (30ish) the service grabs the product image, name and price.
 - Otherwise image, name and price can be input manually.
 
@@ -64,9 +64,9 @@ Only config file in repo is the docker-compose.yml.<br />
 - Consists of two services as it requires a SQL database for caching thumbnails, parsed photo data and smaller file versions for download.
 - I have a [MariaDB](https://github.com/MariaDB/mariadb-docker#readme) container for this (phdb in the docker-compose yml).
 
-### Shinobi
-- [Shinobi](https://gitlab.com/Shinobi-Systems/Shinobi/-/blob/master/README.md) is a CCTV service for viewing and managing an array of camera streams. </br>
-- I use it as a web UI to remotely view and record an IP camera for checking on the dog. </br>
+### DogCam (Shinobi)
+- [Shinobi](https://gitlab.com/Shinobi-Systems/Shinobi/-/blob/master/README.md) is a CCTV service for viewing and managing an array of camera streams.
+- I use it as a web UI to remotely view and record an IP camera for checking on the dog.
 - Provides security and privacy peace of mind as I can keep the cheap IP camera blocked from external network while Shinobi grabs the feed from local network to expose it externally.
 
 ### Heimdall
