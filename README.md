@@ -42,7 +42,6 @@ Only config file in repo is the docker-compose.yml.<br />
 <img align="center" src="/images/autheliaDemo.gif" alt="2FA demo of accessing heimdall" width="275"><br \>
 </p>
 
-
 ### Jitsi
 - [Jitsi](https://github.com/jitsi/jitsi-meet#readme) is a full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.</br> 
 - Setting this up during the pandemic has been huge quality of life upgrade over Zoom, I highly recommend it. </br>
@@ -55,7 +54,7 @@ Only config file in repo is the docker-compose.yml.<br />
 ### Wishlist
 - [Wishlist](https://github.com/Wingysam/Christmas-Community#readme) is a private Amazon wishlist alternative (actually called Christmas Community)
 - Supports seperate user accounts with basic user & password, then all users wishlists visible to everyone.
-- For supported websites (30ish sites) Users can add items to their wishlist with the product url and the service grabs the product image, name and price.
+- Users can add items to their wishlist with the product url and for supported websites (30ish) the service grabs the product image, name and price.
 - Otherwise image, name and price can be input manually.
 
 ### Photoview
