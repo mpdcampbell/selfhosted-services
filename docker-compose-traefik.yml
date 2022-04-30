@@ -33,7 +33,7 @@ services:
       - --accessLog.filters.statusCodes=100-599
       - --providers.docker=true
       - --providers.docker.endpoint=${SOCKET_PROXY}
-      - --providers.docker.defaultrule=Host(`{{ index .Labels "com.docker.compose.service" }}.${DOMAINNAME}`)
+      - --providers.docker.defaultrule=Host(`{{ index .Labels "com.docker.compose.service" }}.${BLOGDOMAIN}`)
       - --providers.docker.exposedByDefault=false
       - --providers.docker.network=t2_proxy
       - --providers.docker.swarmMode=false
@@ -82,6 +82,8 @@ services:
       - "traefik.http.routers.traefik-rtr.tls=true"
       - "traefik.http.routers.traefik-rtr.tls.domains[0].main=${DOMAINNAME}"
       - "traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.${DOMAINNAME}"
+      - "traefik.http.routers.traefik-rtr.tls.domains[1].main=${BLOGDOMAIN}"
+      - "traefik.http.routers.traefik-rtr.tls.domains[1].sans=*.${BLOGDOMAIN}"
       ## Services - API
       - "traefik.http.routers.traefik-rtr.service=api@internal"
       ## Middlewares
