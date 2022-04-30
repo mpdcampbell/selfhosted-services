@@ -359,7 +359,7 @@ services:
       - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.allowedhosts=jitsi.${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.jitsi-headers.headers.contentsecuritypolicy= default-src 'none'; connect-src 'self'; img-src 'self' data:; media-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; worker-src 'self'"
+      - "traefik.http.middlewares.jitsi-headers.headers.contentsecuritypolicy= default-src 'none'; connect-src 'self'; img-src 'self' data:; media-src 'self'; font-src https://s3.amazonaws.com/giphyscripts/react-giphy-brand/fonts/; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; worker-src 'self'"
       - "traefik.http.middlewares.jitsi-headers.headers.permissionsPolicy=ambient-light-sensor 'self'; camera 'self' geolocation 'none'; microphone 'self'; payment 'none'; usb 'none'; interest-cohort 'none'"
       ## HTTP Services
       - "traefik.http.routers.jitsi-rtr.service=jitsi-svc"
