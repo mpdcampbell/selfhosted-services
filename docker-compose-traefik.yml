@@ -93,7 +93,7 @@ services:
       - "traefik.http.middlewares.traefik-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
       - "traefik.http.middlewares.traefik-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
 
-# Docker Socket Proxy
+  # Docker Socket Proxy
   socket-proxy:
     container_name: socketProxy
     image: tecnativa/docker-socket-proxy
@@ -145,6 +145,7 @@ services:
       - "traefik.http.routers.heimdall-rtr.service=heimdall-svc"
       - "traefik.http.services.heimdall-svc.loadbalancer.server.port=${HEIMDALL_PORT}"
   
+  #Gift Wishlist
   wishlist:
     container_name: wishlist
     image: wingysam/christmas-community:latest
@@ -183,7 +184,8 @@ services:
          ## HTTP Services
       - "traefik.http.routers.wishlist-rtr.service=wishlist-svc"
       - "traefik.http.services.wishlist-svc.loadbalancer.server.port=${WISHLIST_PORT}"
-
+  
+  #DogCam      
   shinobi:
     container_name: shinobi
     image: shinobisystems/shinobi:latest
@@ -221,6 +223,7 @@ services:
       - "traefik.http.routers.shinobi-rtr.service=shinobi-svc"
       - "traefik.http.services.shinobi-svc.loadbalancer.server.port=${SHINOBI_PORT}"
 
+  #Photo Gallery      
   photoview:
     image: viktorstrate/photoview:latest
     container_name: photoview
@@ -306,7 +309,7 @@ services:
       - "traefik.http.routers.authelia-rtr.service=authelia-svc"
       - "traefik.http.services.authelia-svc.loadbalancer.server.port=${AUTHELIA_PORT}"
 
- # Jitsi frontend
+  # Jitsi frontend
   jitsi_web:
     container_name: jitsi
     image: jitsi/web
@@ -355,7 +358,7 @@ services:
       - "traefik.http.routers.jitsi-rtr.tls=true"
       - "traefik.http.routers.jitsi-rtr.tls.options=tls-opts@file"
      # Middlewares
-      - "traefik.http.routers.jitsi-rtr.middlewares=jitsi-headers,chain-authelia-no-cf@file"
+      - "traefik.http.routers.jitsi-rtr.middlewares=jitsi-headers,middlewares-geo-ipwhitelist@file,chain-authelia-no-cf@file"
       - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.allowedhosts=jitsi.${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
@@ -463,3 +466,36 @@ services:
       - TZ
     networks:
       meet.jitsi:
+  
+  # Dev codeslikeaduck.com
+  blogDev:
+    container_name: blogDev
+    image: klakegg/hugo:ext-ubuntu
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    volumes:
+      - ${BLOGDEV_DIR}:/src
+    command:
+      - server
+    environment:
+      - PUID
+      - PGID
+      - TZ
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.blogdev-rtr.entrypoints=https"
+      - "traefik.http.routers.blogdev-rtr.rule=Host(`blog.${DOMAINNAME}`)"
+      - "traefik.http.routers.blogdev-rtr.tls=true"
+      - "traefik.http.routers.blogdev-rtr.tls.options=tls-opts@file"
+      # Middlewares
+      - "traefik.http.routers.blogdev-rtr.middlewares=blogdev-headers,chain-authelia@file"
+      - "traefik.http.middlewares.blogdev-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
+      - "traefik.http.middlewares.blogdev-headers.headers.allowedhosts=blog.${DOMAINNAME}"
+      - "traefik.http.middlewares.blogdev-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.blogdev-headers.headers.contentsecuritypolicy=default-src 'none'; connect-src 'self'; font-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'"
+      - "traefik.http.middlewares.blogdev-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
+      ## HTTP Services
+      - "traefik.http.routers.blogdev-rtr.service=blogdev-svc"
+      - "traefik.http.services.blogdev-svc.loadbalancer.server.port=${BLOG_PORT}"
