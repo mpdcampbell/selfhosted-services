@@ -3,9 +3,13 @@
 ########################### NETWORKS
 networks:
   meet.jitsi:
+    name: meet.jitsi
+    driver: bridge
   t2_proxy:
     name: t2_proxy
+    driver: bridge
   default:
+    name: local_default
     driver: bridge
   socket_proxy:
     name: socket_proxy
