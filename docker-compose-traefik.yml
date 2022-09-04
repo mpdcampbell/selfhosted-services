@@ -37,7 +37,7 @@ services:
       - --accessLog.filters.statusCodes=100-599
       - --providers.docker=true
       - --providers.docker.endpoint=${SOCKET_PROXY}
-      - --providers.docker.defaultrule=Host(`{{ index .Labels "com.docker.compose.service" }}.${BLOGDOMAIN}`)
+      - --providers.docker.defaultrule=Host(`{{ index .Labels "com.docker.compose.service" }}.${DOMAINNAME}`)
       - --providers.docker.exposedByDefault=false
       - --providers.docker.network=t2_proxy
       - --providers.docker.swarmMode=false
