@@ -248,7 +248,7 @@ services:
       - PHOTOVIEW_MYSQL_URL 
       - PHOTOVIEW_LISTEN_IP
       - PHOTOVIEW_LISTEN_PORT
-      - PHOTOVIEW_MEDIA_CACHE=/app/cache
+      - PHOTOVIEW_MEDIA_CACHE
     labels:
       - "traefik.enable=true"
       # HTTP Routers
@@ -494,11 +494,11 @@ services:
       - "traefik.http.routers.blogdev-rtr.tls=true"
       - "traefik.http.routers.blogdev-rtr.tls.options=tls-opts@file"
       # Middlewares
-      - "traefik.http.routers.blogdev-rtr.middlewares=blogdev-headers,chain-authelia@file"
+      - "traefik.http.routers.blogdev-rtr.middlewares=blogdev-headers,chain-authelia@file,errorpage-redirect"
       - "traefik.http.middlewares.blogdev-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.blogdev-headers.headers.allowedhosts=blog.${DOMAINNAME}"
       - "traefik.http.middlewares.blogdev-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.blogdev-headers.headers.contentsecuritypolicy=default-src 'none'; connect-src 'self'; font-src 'self'; img-src 'self'; script-src 'self'; style-src 'self'"
+      - "traefik.http.middlewares.blogdev-headers.headers.contentsecuritypolicy=default-src 'none'; connect-src 'self'; font-src 'self' https://fonts.gstatic.com; img-src 'self'; script-src 'self' 'sha256-5BVM9B5Dy9frPcDpLnaQOeKjPE+7NLNSI5+170llxNU=' https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js; style-src 'self' 'sha256-URsfFweIW8RxEWVIGboHvuOr48keLrxzQBgEBCUkNWk=' https://fonts.googleapis.com"
       - "traefik.http.middlewares.blogdev-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
       ## HTTP Services
       - "traefik.http.routers.blogdev-rtr.service=blogdev-svc"
