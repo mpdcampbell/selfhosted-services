@@ -183,7 +183,7 @@ services:
       - "traefik.http.middlewares.wishlist-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
       - "traefik.http.middlewares.wishlist-headers.headers.allowedhosts=wishlist.${DOMAINNAME}"
       - "traefik.http.middlewares.wishlist-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.wishlist-headers.headers.contentsecuritypolicy= default-src 'none'; font-src 'self' https://fonts.gstatic.com; form-action 'self'; img-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'"
+      - "traefik.http.middlewares.wishlist-headers.headers.contentsecuritypolicy= default-src 'self'; font-src 'self' https://fonts.gstatic.com; form-action 'self'; img-src *; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.gstatic.com"
       - "traefik.http.middlewares.wishlist-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
          ## HTTP Services
       - "traefik.http.routers.wishlist-rtr.service=wishlist-svc"
