@@ -1,6 +1,6 @@
 # selfhosted-services
 A summary of the services I host.<br />
-All services are sitting behind authelia 2FA with routing via traefik.<br />
+All services are sitting behind Authelia 2FA with routing via Traefik.<br />
 Services are hosted as docker containers on a linux home server.<br />
 Only config file in repo is the docker-compose.yml.<br />
 
@@ -12,13 +12,15 @@ Only config file in repo is the docker-compose.yml.<br />
 
 ## The Services
 1. [Traefik](#traefik)
-2. [Docker-Socket-Proxy](#docker-socket-proxy)
-3. [Authelia](#authelia)
-4. [Jitsi](#jitsi)
-5. [Photoview](#photoview)
-6. [Wishlist (Christmas-Community)](#wishlist-christmas-community)
-7. [DogCam (Shinobi)](#dogcam-shinobi)
-8. [Heimdall](#heimdall)
+2. [Authelia](#authelia)
+3. [Docker-Socket-Proxy](#docker-socket-proxy)
+4. [Traefik-geo-ipwhitelist](#traefik-geo-ipwhitelist)
+5. [Jitsi](#jitsi)
+6. [Photoview](#photoview)
+7. [Wishlist (Christmas-Community)](#wishlist-christmas-community)
+8. [DogCam (Shinobi)](#dogcam-shinobi)
+9. [Heimdall](#heimdall)
+10. [Dev Blog](#dev-blog)
 
 ### Traefik
 - [Traefik (V2)](https://github.com/traefik/traefik#readme) is a reverse proxy and is the backbone of the set up. 
@@ -29,11 +31,6 @@ Only config file in repo is the docker-compose.yml.<br />
 - Main middlewares in this set up are http to https redirect, request rate limiter, a middleware applying range of http security headers and a middleware routing requests through authelia for two factor authentication.
 - A different http security header middleware is define for each service to allow future customisation.
 
-### Docker-Socket-Proxy
-- [Docker-Socket-Proxy](https://github.com/Tecnativa/docker-socket-proxy#readme) a proxy layer for between traefik and the docker socket.
-- Traefik requires access to the docker socket to work and Traefik is exposed to the internet. This means an attack on traefik could grant the attacker root access on the underlying host. 
-- [Recommended](https://doc.traefik.io/traefik/providers/docker/#docker-api-access) by traefik devs, docker-socket-proxy only allows access to the sections of the docker API that Traefik needs to function.
-
 ### Authelia
 - [Authelia](https://github.com/authelia/authelia#readme) is an authentication server providing two factor authentication for all the services.
 - Allows users to be created and access level (no auth, single factor, two factor, no access) on a per service basis.
@@ -41,6 +38,17 @@ Only config file in repo is the docker-compose.yml.<br />
 <p align="Left">
 <img align="center" src="/images/autheliaDemo.gif" alt="2FA demo of accessing heimdall" width="275"><br \>
 </p>
+
+### Docker-Socket-Proxy
+- [Docker-Socket-Proxy](https://github.com/Tecnativa/docker-socket-proxy#readme) a proxy layer for between traefik and the docker socket.
+- Traefik requires access to the docker socket to work and Traefik is exposed to the internet. This means an attack on traefik could grant the attacker root access on the underlying host. 
+- [Recommended](https://doc.traefik.io/traefik/providers/docker/#docker-api-access) by traefik devs, docker-socket-proxy only allows access to the sections of the docker API that Traefik needs to function.
+
+### Traefik-geo-ipwhitelist
+- [Traefik-geo-ipwhitelist](https://github.com/mpdcampbell/traefik-geo-ipwhitelist#readme) creates and updates a geography based [ipwhitelist middleware](https://doc.traefik.io/traefik/middlewares/http/ipwhitelist/) for Traefik.
+- Basically, takes in a list of allowed locations, grabs the IP addresses that match those locations from a database, and makes an "allowed ips" list.
+- Assigning this middleware to a service's router, Traefik will check that the IP address of any requests for that service are in the allowed list before passing them on, if not it is returned with a 403 code.
+- Useful for the services which can't be proxied through Cloudflare due to bandwidth (i.e. Jitsi).
 
 ### Jitsi
 - [Jitsi](https://github.com/jitsi/jitsi-meet#readme) is a full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.
@@ -71,6 +79,10 @@ Only config file in repo is the docker-compose.yml.<br />
 
 ### Heimdall
 - [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
+
+### Dev Blog
+- Copy of [codeslikeaduck.com](https://codeslikeaduck.com) seperately hosted to act as a dev environment.
+- Allows me to play with the site without risking downtime.
 
 </br>
 
