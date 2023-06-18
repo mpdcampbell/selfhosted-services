@@ -15,12 +15,13 @@ Only config file in repo is the docker-compose.yml.<br />
 2. [Authelia](#authelia)
 3. [Docker-Socket-Proxy](#docker-socket-proxy)
 4. [Traefik-geo-ipwhitelist](#traefik-geo-ipwhitelist)
-5. [Jitsi](#jitsi)
-6. [Photoview](#photoview)
-7. [Wishlist (Christmas-Community)](#wishlist-christmas-community)
-8. [DogCam (Shinobi)](#dogcam-shinobi)
-9. [Heimdall](#heimdall)
-10. [Dev Blog](#dev-blog)
+5. [Traefik-geoip-filter](#traefik-geoip-filter)
+6. [Jitsi](#jitsi)
+7. [Photoview](#photoview)
+8. [Wishlist (Christmas-Community)](#wishlist-christmas-community)
+9. [DogCam (Shinobi)](#dogcam-shinobi)
+10. [Heimdall](#heimdall)
+11. [Dev Blog](#dev-blog)
 
 ### Traefik
 - [Traefik (V2)](https://github.com/traefik/traefik#readme) is a reverse proxy and is the backbone of the set up. 
@@ -28,7 +29,7 @@ Only config file in repo is the docker-compose.yml.<br />
 - Each service has a corresponding subdomain registered at the DNS and Traefik routes each subdomain request to the correct service.
 - This allows traffic to *service.example.com* to access the service without opening the service external port on the network.
 - As well as convenience, Traefik handles security as all traffic is routed through middlewares where requests can be filtered and modified before they reach the service.
-- Main middlewares in this set up are http to https redirect, request rate limiter, a middleware applying range of http security headers and a middleware routing requests through authelia for two factor authentication.
+- Main middlewares in this set up are http to https redirect, request rate limiter, a middleware applying range of http security headers and a middleware routing requests through Authelia for two factor authentication.
 - A different http security header middleware is define for each service to allow future customisation.
 
 ### Authelia
@@ -46,9 +47,15 @@ Only config file in repo is the docker-compose.yml.<br />
 
 ### Traefik-geo-ipwhitelist
 - [Traefik-geo-ipwhitelist](https://github.com/mpdcampbell/traefik-geo-ipwhitelist#readme) creates and updates a geography based [ipwhitelist middleware](https://doc.traefik.io/traefik/middlewares/http/ipwhitelist/) for Traefik.
-- Basically, takes in a list of allowed locations, grabs the IP addresses that match those locations from a database, and makes an "allowed ips" list.
+- You define the countries, counties, cities you want to allow traffic from, it grabs the IP addresses that match those locations from a database, and makes an "allowed IPs" list.
 - Assigning this middleware to a service's router, Traefik will check that the IP address of any requests for that service are in the allowed list before passing them on, if not it is returned with a 403 code.
 - Useful for the services which can't be proxied through Cloudflare due to bandwidth (i.e. Jitsi).
+- Though I'm biased, I made this one.
+
+### Traefik-geoip-filter
+- [Traefik-geoip-filter](https://github.com/mpdcampbell/traefik-geoip-filter) is really just an improved version of traefik-geo-ipwhitelist above, as you can set a location blocklist or allowlist.
+- The way it works is a bit different though as it sets up a Nginx webserver and uses this as a AuthServer that you can assign toto a service router using the [forwarAuth middleware](https://doc.traefik.io/traefik/middlewares/http/forwardauth/).
+- I think it's great, but I also made it.
 
 ### Jitsi
 - [Jitsi](https://github.com/jitsi/jitsi-meet#readme) is a full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.
@@ -61,14 +68,14 @@ Only config file in repo is the docker-compose.yml.<br />
 
 ### Wishlist (Christmas-community)
 - [Christmas-community](https://github.com/Wingysam/Christmas-Community#readme) is a private Amazon wishlist alternative.
-- Supports seperate user accounts with basic user & password auth, with all wishlists visible to all users.
-- Users can add items to their wishlist with the product url and for supported websites (30ish) the service grabs the product image, name and price.
+- Supports separate user accounts with basic user & password auth, with all wishlists visible to all users.
+- Users can add items to their wishlist with the product URL and for supported websites (30ish) the service grabs the product image, name and price.
 - Otherwise image, name and price can be input manually.
 
 ### Photoview
-- [Photoview](https://github.com/photoview/photoview#readme) is an actively developed photo & video gallery UI that mantains your directory structure.
+- [Photoview](https://github.com/photoview/photoview#readme) is an actively developed photo & video gallery UI that maintains your directory structure.
 - Features local facial recognition for photo sorting, tiered user account access, and supports RAW files and EXIF parsing.
-- This is another service I highly recommend to anyone with years of family photos languishing on a harddrive.
+- This is another service I highly recommend to anyone with years of family photos languishing on a hard drive.
 - Consists of two services as it requires a SQL database for caching thumbnails, parsed photo data and smaller file versions for download.
 - I have a [MariaDB](https://github.com/MariaDB/mariadb-docker#readme) container for this (phdb in the docker-compose yml).
 
@@ -81,8 +88,8 @@ Only config file in repo is the docker-compose.yml.<br />
 - [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
 
 ### Dev Blog
-- Copy of [codeslikeaduck.com](https://codeslikeaduck.com) seperately hosted to act as a dev environment.
-- Allows me to play with the site without risking downtime.
+- Copy of [codeslikeaduck.com](https://codeslikeaduck.com) separately hosted to act as a dev environment.
+- Allows me to tinker with the site without risking downtime.
 
 </br>
 
