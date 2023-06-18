@@ -46,6 +46,7 @@ services:
       - --certificatesResolvers.dns-cloudflare.acme.email=${CLOUDFLARE_EMAIL}
       - --certificatesResolvers.dns-cloudflare.acme.storage=/acme.json
       - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
+      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,1.0.0.1:53  
     networks:
       - t2_proxy
       - socket_proxy 
@@ -84,7 +85,7 @@ services:
       - "traefik.http.routers.traefik-rtr.entrypoints=https"
       - "traefik.http.routers.traefik-rtr.rule=Host(`traefik.${DOMAINNAME}`)"
       - "traefik.http.routers.traefik-rtr.tls=true"
-      #- "traefik.http.routers.traefik-rtr.tls.certresolver=dns-cloudflare"
+      - "traefik.http.routers.traefik-rtr.tls.certresolver=dns-cloudflare"
       - "traefik.http.routers.traefik-rtr.tls.domains[0].main=${DOMAINNAME}"
       - "traefik.http.routers.traefik-rtr.tls.domains[0].sans=*.${DOMAINNAME}"
       - "traefik.http.routers.traefik-rtr.tls.domains[1].main=${BLOGDOMAIN}"
@@ -93,6 +94,9 @@ services:
       - "traefik.http.routers.traefik-rtr.tls.domains[2].sans=*.${WEDDOMAIN}"
       ## Services - API
       - "traefik.http.routers.traefik-rtr.service=api@internal"
+      ## Geoip Filter
+      - "traefik.http.middlewares.middlewares-geoipfilter.forwardAuth.address=http://geoipfilter:${LISTEN_PORT}/traefik"
+  #   - "traefik.http.middlewares.middlewares-geoipfilter2.forwardAuth.address=http://geoipfilter2:${LISTEN_PORT}/traefik"
       ## Middlewares
       - "traefik.http.routers.traefik-rtr.middlewares=traefik-headers,chain-authelia@file"  
       - "traefik.http.middlewares.traefik-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
@@ -230,6 +234,40 @@ services:
       - "traefik.http.routers.shinobi-rtr.service=shinobi-svc"
       - "traefik.http.services.shinobi-svc.loadbalancer.server.port=${SHINOBI_PORT}"
 
+  go2rtc:
+    image: alexxit/go2rtc:latest
+    container_name: go2rtc
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    volumes:
+      - ${GO2RTC_DIR}:/config
+    environment:
+      - GO2RTC_PORT
+      - BASE_PATH
+      - TZ
+    labels:
+      - "traefik.enable=true"
+      # HTTP Routers
+      - "traefik.http.routers.go2rtc-rtr.entrypoints=https"
+      - "traefik.http.routers.go2rtc-rtr.rule=Host(`dog.${DOMAINNAME}`)"
+      - "traefik.http.routers.go2rtc-rtr.tls=true"
+      - "traefik.http.routers.go2rtc-rtr.tls.options=tls-opts@file"
+      # Regex redirect
+      - "traefik.http.middlewares.go2rtc-stream-redirect.redirectregex.regex=^https?://dog.${DOMAINNAME}/$$"
+      - "traefik.http.middlewares.go2rtc-stream-redirect.redirectregex.replacement=https://dog.${DOMAINNAME}${BASE_PATH}/stream.html?src=${CAM_1}&src=${CAM_2}&mode=${STREAM_MODE}"
+      - "traefik.http.middlewares.go2rtc-stream-redirect.redirectregex.permanent=true"
+      # Middlewares
+      - "traefik.http.routers.go2rtc-rtr.middlewares=go2rtc-headers,middlewares-geoipfilter,chain-authelia-no-cf@file,go2rtc-stream-redirect"
+      - "traefik.http.middlewares.go2rtc-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
+      - "traefik.http.middlewares.go2rtc-headers.headers.allowedhosts=dog.${DOMAINNAME}"
+      - "traefik.http.middlewares.go2rtc-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.go2rtc-headers.headers.contentsecuritypolicy=connect-src 'self'; img-src 'self'; script-src 'self' 'sha256-vguJTyH8pRrRWqm7V4xeUfY6y4lNPzG+6LanIQnjTRo=' 'sha256-inHgEVI1ARB8dDHDbhxsj0a2Mg1Ql8sTAjkibYTSiPo='; style-src 'self' 'sha256-a6GDV+5IhEoq/O32LdhToUs/GKnoTW3VKArUGQ2Fd4U=' 'sha256-uldmZibwUatiQkAiAM/ca0pbHTDr8yFmF32B4fczSSc=' 'sha256-HI4QLrOPVrXtlV8CcyKIEl2qnA0jat6kyLNN/ZH9BsU=' 'sha256-Pbnf1TaAoyGss9KtHmYulF9kHcYrCyogVN1uelKqGKs='; media-src blob:"
+      - "traefik.http.middlewares.go2rtc-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
+        ## HTTP Services
+      - "traefik.http.routers.go2rtc-stream-rtr.service=go2rtc-svc"
+      - "traefik.http.services.go2rtc-svc.loadbalancer.server.port=${GO2RTC_PORT}"
+
   #Photo Gallery      
   photoview:
     image: viktorstrate/photoview:edge
@@ -365,7 +403,7 @@ services:
       - "traefik.http.routers.jitsi-rtr.tls=true"
       - "traefik.http.routers.jitsi-rtr.tls.options=tls-opts@file"
      # Middlewares
-      - "traefik.http.routers.jitsi-rtr.middlewares=jitsi-headers,middlewares-geo-ipwhitelist@file,chain-authelia-no-cf@file"
+      - "traefik.http.routers.jitsi-rtr.middlewares=jitsi-headers,middlewares-geoipfilter,chain-authelia-no-cf@file"
       - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.allowedhosts=jitsi.${DOMAINNAME}"
       - "traefik.http.middlewares.jitsi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
@@ -517,3 +555,18 @@ services:
     environment:
       - MAXMIND_KEY
       - COUNTRY_CODES
+      - TZ
+
+  geoipfilter:
+      image: mpdcampbell/traefik-geoip-filter
+      container_name: geoipfilter
+      networks:
+        - t2_proxy
+      volumes:
+       - ${GEOIP_DIR}:/geoip
+      environment:
+        - MAXMIND_KEY
+        - FILTER_TYPE
+        - COUNTRY_CODES
+        - SUB_CODES
+        - TZ=${TZ}
