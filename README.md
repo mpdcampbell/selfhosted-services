@@ -45,16 +45,16 @@ Only config file in repo is the docker-compose.yml.<br />
 - Traefik requires access to the docker socket to work and Traefik is exposed to the internet. This means an attack on traefik could grant the attacker root access on the underlying host. 
 - [Recommended](https://doc.traefik.io/traefik/providers/docker/#docker-api-access) by traefik devs, docker-socket-proxy only allows access to the sections of the docker API that Traefik needs to function.
 
-### Traefik-geo-ipwhitelist
+### Traefik-Geo-Ipwhitelist
 - [Traefik-geo-ipwhitelist](https://github.com/mpdcampbell/traefik-geo-ipwhitelist#readme) creates and updates a geography based [ipwhitelist middleware](https://doc.traefik.io/traefik/middlewares/http/ipwhitelist/) for Traefik.
 - You define the countries, counties, cities you want to allow traffic from, it grabs the IP addresses that match those locations from a database, and makes an "allowed IPs" list.
 - Assigning this middleware to a service's router, Traefik will check that the IP address of any requests for that service are in the allowed list before passing them on, if not it is returned with a 403 code.
 - Useful for the services which can't be proxied through Cloudflare due to bandwidth (i.e. Jitsi).
 - Though I'm biased, I made this one.
 
-### Traefik-geoip-filter
-- [Traefik-geoip-filter](https://github.com/mpdcampbell/traefik-geoip-filter) is really just an improved version of traefik-geo-ipwhitelist above, as you can set a location blocklist or allowlist.
-- The way it works is a bit different though as it sets up a Nginx webserver and uses this as a AuthServer that you can assign toto a service router using the [forwarAuth middleware](https://doc.traefik.io/traefik/middlewares/http/forwardauth/).
+### Traefik-Geoip-Filter
+- [Traefik-geoip-filter](https://github.com/mpdcampbell/traefik-geoip-filter) is really just an improved version of traefik-geo-ipwhitelist above, as you can set a blocklist or allowlist.
+- The way it works is a bit different though as it sets up a Nginx webserver, and uses this as a AuthServer that you can assign to a service router using the [forwardAuth middleware](https://doc.traefik.io/traefik/middlewares/http/forwardauth/).
 - I think it's great, but I also made it.
 
 ### Jitsi
