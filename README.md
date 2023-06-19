@@ -2,7 +2,7 @@
 A summary of the services I host.<br />
 All services are sitting behind Authelia 2FA with routing via Traefik.<br />
 Services are hosted as docker containers on a linux home server.<br />
-Only config file in repo is the docker-compose.yml.<br />
+Only config file in the repo is the docker-compose.yml.<br />
 
 <p align="Left">
 <img align="center" src="/images/heimdallScreenshot.png" alt="Hosted services" width="380"><br \>
@@ -19,7 +19,7 @@ Only config file in repo is the docker-compose.yml.<br />
 6. [Jitsi](#jitsi)
 7. [Photoview](#photoview)
 8. [Wishlist (Christmas-Community)](#wishlist-christmas-community)
-9. [DogCam (Shinobi)](#dogcam-shinobi)
+9. [DogCam (Go2rtc)](#dogcam-go2rtc)
 10. [Heimdall](#heimdall)
 11. [Dev Blog](#dev-blog)
 
@@ -79,10 +79,19 @@ Only config file in repo is the docker-compose.yml.<br />
 - Consists of two services as it requires a SQL database for caching thumbnails, parsed photo data and smaller file versions for download.
 - I have a [MariaDB](https://github.com/MariaDB/mariadb-docker#readme) container for this (phdb in the docker-compose yml).
 
-### DogCam (Shinobi)
-- [Shinobi](https://gitlab.com/Shinobi-Systems/Shinobi/-/blob/master/README.md) is a CCTV service for viewing and managing an array of camera streams.
-- I use it as a web UI to remotely view and record an IP camera for checking on the dog.
-- Provides security and privacy peace of mind as I can keep the cheap IP camera blocked from external network while Shinobi grabs the feed from local network to expose it externally.
+### DogCam (Go2rtc)
+- [Go2rtc](https://github.com/AlexxIT/go2rtc#readme) is a minimalist video feed streaming app.
+- Supports a huge range of protocols and sources, even ffmpeg, and all with minimal configuration.
+- I use it to capture the feed from an IP camera to act as a self hosted pet cam.
+- For this use case, I highly recommend go2rtc over other popular CCTV services that are bloated with features you don't need.
+- To make is as simple to use as possible, I added a [redirectregex middleware](https://doc.traefik.io/traefik/middlewares/http/redirectregex/) to redirect homepage traffic directly to the video feed.
+<details> <summary> Expand for screenshot of go2rtc </summary>
+    
+- Rather than show my cameras, I set up two ffmpeg feeds playing Big Buck Bunny.
+    <p align="Left">
+    <img align="center" src="/images/go2rtcScreenshot.png" alt="Screenshot of go2rtc playing two video feeds" width="275"><br \>
+    </p>
+    </details>
 
 ### Heimdall
 - [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
