@@ -46,7 +46,6 @@ services:
       - --certificatesResolvers.dns-cloudflare.acme.email=${CLOUDFLARE_EMAIL}
       - --certificatesResolvers.dns-cloudflare.acme.storage=/acme.json
       - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.provider=cloudflare
-      - --certificatesResolvers.dns-cloudflare.acme.dnsChallenge.resolvers=1.1.1.1:53,1.0.0.1:53  
     networks:
       - t2_proxy
       - socket_proxy 
@@ -96,7 +95,6 @@ services:
       - "traefik.http.routers.traefik-rtr.service=api@internal"
       ## Geoip Filter
       - "traefik.http.middlewares.middlewares-geoipfilter.forwardAuth.address=http://geoipfilter:${LISTEN_PORT}/traefik"
-  #   - "traefik.http.middlewares.middlewares-geoipfilter2.forwardAuth.address=http://geoipfilter2:${LISTEN_PORT}/traefik"
       ## Middlewares
       - "traefik.http.routers.traefik-rtr.middlewares=traefik-headers,chain-authelia@file"  
       - "traefik.http.middlewares.traefik-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
@@ -532,4 +530,4 @@ services:
         - FILTER_TYPE
         - COUNTRY_CODES
         - SUB_CODES
-        - TZ=${TZ}
+        - TZ
