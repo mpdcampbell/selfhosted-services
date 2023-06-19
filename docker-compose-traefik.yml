@@ -197,43 +197,6 @@ services:
       - "traefik.http.services.wishlist-svc.loadbalancer.server.port=${WISHLIST_PORT}"
   
   #DogCam      
-  shinobi:
-    container_name: shinobi
-    image: shinobisystems/shinobi:latest
-    restart: unless-stopped
-    networks:
-      - t2_proxy
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
-      - ${SHINOBI_DIR}/config:/config
-      - ${SHINOBI_DIR}/customAutoLoad:/home/Shinobi/libs/customAutoLoad
-      - ${SHINOBI_DIR}/database:/var/lib/mysql
-      - ${SHINOBI_STORAGE_DIR}:/home/Shinobi/videos
-      - ${SHINOBI_DIR}/plugins:/home/Shinobi/plugins
-      - ${SHINOBI_STREAM_DIR}:/dev/shm/streams
-    environment:
-      - PGID
-      - PUID
-      - TZ
-    labels:
-      - "traefik.enable=true"
-      # HTTP Routers
-      - "traefik.http.routers.shinobi-rtr.entrypoints=https"
-      - "traefik.http.routers.shinobi-rtr.rule=Host(`shi.${DOMAINNAME}`)"
-      - "traefik.http.routers.shinobi-rtr.tls=true"
-      - "traefik.http.routers.shinobi-rtr.tls.options=tls-opts@file"
-      # Middlewares
-      - "traefik.http.routers.shinobi-rtr.middlewares=shinobi-headers,chain-authelia@file"
-      - "traefik.http.middlewares.shinobi-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
-      - "traefik.http.middlewares.shinobi-headers.headers.allowedhosts=shi.${DOMAINNAME}"
-      - "traefik.http.middlewares.shinobi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.shinobi-headers.headers.contentsecuritypolicy=frame-ancestors 'none'; object-src 'none'; base-uri 'none';"
-      - "traefik.http.middlewares.shinobi-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
-        ## HTTP Services
-      - "traefik.http.routers.shinobi-rtr.service=shinobi-svc"
-      - "traefik.http.services.shinobi-svc.loadbalancer.server.port=${SHINOBI_PORT}"
-
   go2rtc:
     image: alexxit/go2rtc:latest
     container_name: go2rtc
