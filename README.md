@@ -107,6 +107,10 @@ Only config file in the repo is the docker-compose.yml.<br />
   <img src="/images/dogCamIcon.png" alt="DogCam Icon" width="80" />
   <img src="/images/photoviewIcon.png" alt="PhotoView Icon" width="80" /> 
   <img src="/images/jitsiIcon.png" alt="Jitsi Icon" width="80" />
-  <img src="/images/wishlistIcon.png" alt="Wishlist Icon" width="80" /> Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+  <img src="/images/wishlistIcon.png" alt="Wishlist Icon" width="80" /> </br>
+  Icons made by <a href="https://www.freepik.com" title="Freepik">Freepik</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
 </br>
-  <img src="/images/traefikIcon.png" alt="DogCam Icon" width="80" /> Road Icon made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+  <img src="/images/traefikIcon.png" alt="DogCam Icon" width="80" /> </br>
+  Road Icon made by <a href="https://www.flaticon.com/authors/smashicons" title="Smashicons">Smashicons</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></br>
+  <img alt="Duck Icon" width="80" src="/images/duckIcon.png" /> </br>
+Duck Icon made by me.
