@@ -1,4 +1,4 @@
-# selfhosted-services
+# [<img alt="alt_text" width="50px" src="https://www.codeslikeaduck.com/img/codeDuck.svg" />](https://www.codeslikeaduck.com/) selfhosted-services
 A summary of the services I host.<br />
 All services are sitting behind Authelia 2FA with routing via Traefik.<br />
 Services are hosted as Docker containers on a linux home server.<br />
