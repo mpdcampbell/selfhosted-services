@@ -216,7 +216,7 @@ services:
       - "traefik.http.routers.go2rtc-rtr.tls.options=tls-opts@file"
       # Regex redirect
       - "traefik.http.middlewares.go2rtc-stream-redirect.redirectregex.regex=^https?://dog.${DOMAINNAME}/$$"
-      - "traefik.http.middlewares.go2rtc-stream-redirect.redirectregex.replacement=https://dog.${DOMAINNAME}${BASE_PATH}/stream.html?src=${CAM_1}&src=${CAM_2}&mode=${STREAM_MODE}"
+      - "traefik.http.middlewares.go2rtc-stream-redirect.redirectregex.replacement=https://dog.${DOMAINNAME}${BASE_PATH}/stream.html?src=${CAM_1}&mode=${STREAM_MODE}"
       - "traefik.http.middlewares.go2rtc-stream-redirect.redirectregex.permanent=true"
       # Middlewares
       - "traefik.http.routers.go2rtc-rtr.middlewares=go2rtc-headers,middlewares-geoipfilter,chain-authelia-no-cf@file,go2rtc-stream-redirect"
@@ -226,7 +226,7 @@ services:
       - "traefik.http.middlewares.go2rtc-headers.headers.contentsecuritypolicy=connect-src 'self'; img-src 'self'; script-src 'self' 'sha256-vguJTyH8pRrRWqm7V4xeUfY6y4lNPzG+6LanIQnjTRo=' 'sha256-inHgEVI1ARB8dDHDbhxsj0a2Mg1Ql8sTAjkibYTSiPo='; style-src 'self' 'sha256-a6GDV+5IhEoq/O32LdhToUs/GKnoTW3VKArUGQ2Fd4U=' 'sha256-uldmZibwUatiQkAiAM/ca0pbHTDr8yFmF32B4fczSSc=' 'sha256-HI4QLrOPVrXtlV8CcyKIEl2qnA0jat6kyLNN/ZH9BsU=' 'sha256-Pbnf1TaAoyGss9KtHmYulF9kHcYrCyogVN1uelKqGKs='; media-src blob:"
       - "traefik.http.middlewares.go2rtc-headers.headers.permissionsPolicy=ambient-light-sensor 'none'; camera 'none'; geolocation 'none'; microphone 'none'; payment 'none'; usb 'none'; interest-cohort 'none'"
         ## HTTP Services
-      - "traefik.http.routers.go2rtc-stream-rtr.service=go2rtc-svc"
+      - "traefik.http.routers.go2rtc-rtr.service=go2rtc-svc"
       - "traefik.http.services.go2rtc-svc.loadbalancer.server.port=${GO2RTC_PORT}"
 
   #Photo Gallery      
