@@ -1,0 +1,98 @@
+################ NETWORKS
+networks:
+  meet.jitsi:
+    name: meet.jitsi
+    internal: true
+  t2_proxy:
+    name: t2_proxy
+
+################ SERVICES
+services:
+  # Frontend
+  jitsi-web:
+    container_name: jitsi-web
+    image: jitsi/web:stable-8719
+    restart: unless-stopped
+    volumes:
+      - ${JITSI_DIR}/web:/config:Z
+    environment:
+      - PUBLIC_URL
+      - TZ
+      - DISABLE_DEEP_LINKING
+      - ENABLE_SIMULCAST
+    networks:
+      - meet.jitsi
+      - t2_proxy
+    labels:
+      - "traefik.enable=true"
+    ## HTTP Routers
+      - "traefik.http.routers.jitsi-rtr.entrypoints=https"
+      - "traefik.http.routers.jitsi-rtr.rule=Host(`jitsi.$DOMAINNAME`)"
+      - "traefik.http.routers.jitsi-rtr.tls=true"
+      - "traefik.http.routers.jitsi-rtr.tls.options=tls-opts@file"
+      - "traefik.http.routers.jitsi-rtr.service=jitsi-svc"
+    ## Middlewares
+      - "traefik.http.routers.jitsi-rtr.middlewares=jitsi-headers,middlewares-geoipfilter@docker,chain-authelia-no-cf@file"
+      - "traefik.http.middlewares.jitsi-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.jitsi-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
+      - "traefik.http.middlewares.jitsi-headers.headers.allowedhosts=jitsi.${DOMAINNAME}"
+      - "traefik.http.middlewares.jitsi-headers.headers.permissionsPolicy=ambient-light-sensor 'self'; camera 'self' geolocation 'none'; microphone 'self'; payment 'none'; usb 'none'; interest-cohort 'none'"
+    ## HTTP Services
+      - "traefik.http.services.jitsi-svc.loadbalancer.server.port=80"
+      - "traefik.docker.network=t2_proxy"
+
+  # XMPP server
+  prosody:
+    container_name: prosody
+    image: jitsi/prosody:stable-8719
+    restart: unless-stopped
+    volumes:
+      - ${JITSI_DIR}/prosody/config:/config:Z
+    environment:
+      - JICOFO_AUTH_PASSWORD
+      - JVB_AUTH_PASSWORD
+      - PUBLIC_URL
+      - TZ
+    networks:
+      meet.jitsi:
+        aliases:
+          - xmpp.meet.jitsi
+
+  # Focus component
+  jicofo:
+    container_name: jicofo
+    image: jitsi/jicofo:stable-8719
+    restart: unless-stopped
+    volumes:
+      - ${JITSI_DIR}/jicofo:/config:Z
+    environment:
+      - JICOFO_AUTH_PASSWORD
+      - TZ
+    depends_on:
+      - prosody
+    networks:
+      - meet.jitsi
+
+  # Video bridge
+  jvb:
+    container_name: jvb
+    image: jitsi/jvb:stable-8719
+    restart: unless-stopped
+    volumes:
+      - ${JITSI_DIR}/jvb:/config:Z
+    environment:
+      - JVB_AUTH_PASSWORD
+      - PUBLIC_URL
+      - TZ
+    depends_on:
+      - prosody
+    networks:
+      - meet.jitsi
+      - t2_proxy
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.udp.routers.jvb-rtr.entrypoints=video"
+      - "traefik.udp.routers.jvb-rtr.service=jvb-svc"
+      ## HTTP Services
+      - "traefik.udp.services.jvb-svc.loadbalancer.server.port=10000"
