@@ -1,8 +1,8 @@
 # selfhosted-services
 A summary of the services I host.<br />
 All services are sitting behind Authelia 2FA with routing via Traefik.<br />
-Services are hosted as docker containers on a linux home server.<br />
-Only config file in the repo is the docker-compose.yml.<br />
+Services are hosted as Docker containers on a linux home server.<br />
+Only config files in the repo are the docker-compose yaml files.<br />
 
 <p align="Left">
 <img align="center" src="/images/heimdallScreenshot.png" alt="Hosted services" width="380"><br \>
@@ -60,7 +60,7 @@ Only config file in the repo is the docker-compose.yml.<br />
 ### Jitsi
 - [Jitsi](https://github.com/jitsi/jitsi-meet#readme) is a full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.
 - Setting this up during the pandemic has been huge quality of life upgrade over Zoom, I highly recommend it. 
-- The bulk of my docker-compose yml, Jitsi consists of four services working together. 
+- Jitsi consists of four services working together. 
     - **Jitsi Meet (Jitsi_web):** The frontend interface for Jitsi. 
     - **Jitsi Videobridge (JVB):** The traffic controller, a server that routes video streams between participants
     - **Jitsi Conference Focus (Jicofo):** Conference manager, it opens and manages the sessions between participants and JVB.
