@@ -14,14 +14,13 @@ Only config files in the repo are the docker-compose yaml files.<br />
 1. [Traefik](#traefik)
 2. [Authelia](#authelia)
 3. [Docker-Socket-Proxy](#docker-socket-proxy)
-4. [Traefik-Geo-Ipwhitelist](#traefik-geo-ipwhitelist)
-5. [Traefik-Geoip-Filter](#traefik-geoip-filter)
-6. [Jitsi](#jitsi)
-7. [Photoview](#photoview)
-8. [Wishlist (Christmas-Community)](#wishlist-christmas-community)
-9. [DogCam (Go2rtc)](#dogcam-go2rtc)
-10. [Heimdall](#heimdall)
-11. [Dev Blog](#dev-blog)
+4. [Traefik-Geoip-Filter](#traefik-geoip-filter)
+5. [Jitsi](#jitsi)
+6. [Photoview](#photoview)
+7. [Wishlist (Christmas-Community)](#wishlist-christmas-community)
+8. [DogCam (Go2rtc)](#dogcam-go2rtc)
+9. [Heimdall](#heimdall)
+10. [Dev Blog](#dev-blog)
 
 ### Traefik
 - [Traefik (V2)](https://github.com/traefik/traefik#readme) is a reverse proxy and is the backbone of the set up. 
@@ -45,12 +44,13 @@ Only config files in the repo are the docker-compose yaml files.<br />
 - Traefik requires access to the docker socket to work and Traefik is exposed to the internet. This means an attack on traefik could grant the attacker root access on the underlying host. 
 - [Recommended](https://doc.traefik.io/traefik/providers/docker/#docker-api-access) by traefik devs, docker-socket-proxy only allows access to the sections of the docker API that Traefik needs to function.
 
-### Traefik-Geo-Ipwhitelist
-- [Traefik-geo-ipwhitelist](https://github.com/mpdcampbell/traefik-geo-ipwhitelist#readme) creates and updates a geography based [ipwhitelist middleware](https://doc.traefik.io/traefik/middlewares/http/ipwhitelist/) for Traefik.
-- You define the countries, counties, cities you want to allow traffic from, it grabs the IP addresses that match those locations from a database, and makes an "allowed IPs" list.
-- Assigning this middleware to a service's router, Traefik will check that the IP address of any requests for that service are in the allowed list before passing them on, if not it is returned with a 403 code.
-- Useful for the services which can't be proxied through Cloudflare due to bandwidth (i.e. Jitsi).
-- Though I'm biased, I made this one.
+### Traefik-Geoip-Filter
+- [Traefik-geoip-filter](https://github.com/mpdcampbell/traefik-geoip-filter) acts as geography based block/allowlist middleware for Traefik.
+- It sets up a local Nginx webserver, and uses this as an authserver that you can assign to a service router using the [forwardAuth middleware](https://doc.traefik.io/traefik/middlewares/http/forwardauth/).
+- You define the countries, counties, cities you want to allow/block traffic from, it grabs the IP addresses that match those locations from a database and makes an "IPchecklist".
+- Assigning this middleware to a service's router, Traefik will route all requests to authserver first, and will only pass them on to the service if the authserver says the origin IP is/isn't in the allow/block list. Otherwise the request is returned with a 404 code.
+- Useful for the services which can't be proxied through Cloudflare due to their no video/large files policy (i.e. Jitsi or CCTV).
+- I think it's great, but I also made it.
 
 ### Traefik-Geoip-Filter
 - [Traefik-geoip-filter](https://github.com/mpdcampbell/traefik-geoip-filter) is really just an improved version of traefik-geo-ipwhitelist above, as you can set a blocklist or allowlist.
