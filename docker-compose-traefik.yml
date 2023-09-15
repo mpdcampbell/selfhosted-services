@@ -355,30 +355,17 @@ services:
       - "traefik.http.routers.blogdev-rtr.service=blogdev-svc"
       - "traefik.http.services.blogdev-svc.loadbalancer.server.port=${BLOG_PORT}"
 
-  # Location IP Filter   
-  geoipwhitelist:
-    image: mpdcampbell/traefik-geo-ipwhitelist
-    container_name: geoipwhitelist
+  geoipfilter:
+    image: mpdcampbell/traefik-geoip-filter:1.1
+    container_name: geoipfilter
     restart: unless-stopped
+    networks:
+      - t2_proxy
     volumes:
-      - ${TRAEFIK_DIR}/rules:/rules
       - ${GEOIP_DIR}:/geoip
     environment:
       - MAXMIND_KEY
+      - FILTER_TYPE
       - COUNTRY_CODES
+      - SUB_CODES
       - TZ
-
-  geoipfilter:
-      image: mpdcampbell/traefik-geoip-filter
-      container_name: geoipfilter
-      restart: unless-stopped
-      networks:
-        - t2_proxy
-      volumes:
-        - ${GEOIP_DIR}:/geoip
-      environment:
-        - MAXMIND_KEY
-        - FILTER_TYPE
-        - COUNTRY_CODES
-        - SUB_CODES
-        - TZ
