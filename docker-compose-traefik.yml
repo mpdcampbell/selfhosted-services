@@ -20,7 +20,7 @@ networks:
 services:
   traefik:
     container_name: traefik
-    image: traefik:latest
+    image: traefik:v2.10.4
     restart: always
     command:
       - --global.checkNewVersion=true
@@ -164,7 +164,7 @@ services:
   #Gift Wishlist
   wishlist:
     container_name: wishlist
-    image: wingysam/christmas-community:latest
+    image: wingysam/christmas-community:1.32.0
     restart: unless-stopped
     networks:
       - t2_proxy
@@ -296,7 +296,7 @@ services:
   # Authelia
   authelia:
     container_name: authelia
-    image: authelia/authelia:latest
+    image: authelia/authelia:4.37.5
     restart: always
     networks:
       - t2_proxy
@@ -325,7 +325,7 @@ services:
   # Dev codeslikeaduck.com
   blogDev:
     container_name: blogDev
-    image: klakegg/hugo:ext-ubuntu
+    image: klakegg/hugo:0.111.3-ext-ubuntu
     restart: unless-stopped
     networks:
       - t2_proxy
