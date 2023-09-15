@@ -46,15 +46,10 @@ Only config files in the repo are the docker-compose yaml files.<br />
 
 ### Traefik-Geoip-Filter
 - [Traefik-geoip-filter](https://github.com/mpdcampbell/traefik-geoip-filter) acts as geography based block/allowlist middleware for Traefik.
-- It sets up a local Nginx webserver, and uses this as an authserver that you can assign to a service router using the [forwardAuth middleware](https://doc.traefik.io/traefik/middlewares/http/forwardauth/).
+- It sets up a local Nginx webserver, that acts as an authserver for the [forwardAuth middleware](https://doc.traefik.io/traefik/middlewares/http/forwardauth/).
 - You define the countries, counties, cities you want to allow/block traffic from, it grabs the IP addresses that match those locations from a database and makes an "IPchecklist".
 - Assigning this middleware to a service's router, Traefik will route all requests to authserver first, and will only pass them on to the service if the authserver says the origin IP is/isn't in the allow/block list. Otherwise the request is returned with a 404 code.
 - Useful for the services which can't be proxied through Cloudflare due to their no video/large files policy (i.e. Jitsi or CCTV).
-- I think it's great, but I also made it.
-
-### Traefik-Geoip-Filter
-- [Traefik-geoip-filter](https://github.com/mpdcampbell/traefik-geoip-filter) is really just an improved version of traefik-geo-ipwhitelist above, as you can set a blocklist or allowlist.
-- The way it works is a bit different though as it sets up a Nginx webserver, and uses this as a AuthServer that you can assign to a service router using the [forwardAuth middleware](https://doc.traefik.io/traefik/middlewares/http/forwardauth/).
 - I think it's great, but I also made it.
 
 ### Jitsi
