@@ -1,20 +1,21 @@
-# [<img alt="alt_text" width="50px" src="https://www.codeslikeaduck.com/img/codeDuck.svg" />](https://www.codeslikeaduck.com/) selfhosted-services
+# [<img alt="codeslikeaduck logo" width="50px" src="https://www.codeslikeaduck.com/img/codeDuck.svg" />](https://www.codeslikeaduck.com/) selfhosted-services
 A summary of the services I host.<br />
-All services are sitting behind Authelia 2FA with routing via Traefik.<br />
-Services are hosted as Docker containers on a linux home server.<br />
+All services are hosted as Docker containers, with routing handled via Traefik.<br />
+Public website [codeslikeaduck.com](https://www.codeslikeaduck.com/) sits behind Cloudflare proxy.<br />
+Private services sit behind a restrictive GeoIP filter and Authelia 2FA.<br />
 Only config files in the repo are the docker-compose yaml files.<br />
 
 <p align="Left">
-<img align="center" src="/images/heimdallScreenshot.png" alt="Hosted services" width="380"><br \>
+<img align="center" src="/images/allServicesNetwork.png" alt="Hosted services" ><br \>
 </p>
 
 </br>
 
-## The Services
+## The Services (To be expanded)
 1. [Traefik](#traefik)
 2. [Authelia](#authelia)
-3. [Docker-Socket-Proxy](#docker-socket-proxy)
-4. [Traefik-Geoip-Filter](#traefik-geoip-filter)
+3. [Traefik-Geoip-Filter](#traefik-geoip-filter)
+4. [Docker-Socket-Proxy](#docker-socket-proxy)
 5. [Jitsi](#jitsi)
 6. [Photoview](#photoview)
 7. [Wishlist (Christmas-Community)](#wishlist-christmas-community)
@@ -39,11 +40,6 @@ Only config files in the repo are the docker-compose yaml files.<br />
 <img align="center" src="/images/autheliaDemo.gif" alt="2FA demo of accessing heimdall" width="275"><br \>
 </p>
 
-### Docker-Socket-Proxy
-- [Docker-Socket-Proxy](https://github.com/Tecnativa/docker-socket-proxy#readme) a proxy layer for between traefik and the docker socket.
-- Traefik requires access to the docker socket to work and Traefik is exposed to the internet. This means an attack on traefik could grant the attacker root access on the underlying host. 
-- [Recommended](https://doc.traefik.io/traefik/providers/docker/#docker-api-access) by traefik devs, docker-socket-proxy only allows access to the sections of the docker API that Traefik needs to function.
-
 ### Traefik-Geoip-Filter
 - [Traefik-geoip-filter](https://github.com/mpdcampbell/traefik-geoip-filter) acts as geography based block/allowlist middleware for Traefik.
 - It sets up a local Nginx webserver, that acts as an authserver for the [forwardAuth middleware](https://doc.traefik.io/traefik/middlewares/http/forwardauth/).
@@ -51,6 +47,11 @@ Only config files in the repo are the docker-compose yaml files.<br />
 - Assigning this middleware to a service's router, Traefik will route all requests to authserver first, and will only pass them on to the service if the authserver says the origin IP is/isn't in the allow/block list. Otherwise the request is returned with a 404 code.
 - Useful for the services which can't be proxied through Cloudflare due to their no video/large files policy (i.e. Jitsi or CCTV).
 - I think it's great, but I also made it.
+
+### Docker-Socket-Proxy
+- [Docker-Socket-Proxy](https://github.com/Tecnativa/docker-socket-proxy#readme) a proxy layer for between traefik and the docker socket.
+- Traefik requires access to the docker socket to work and Traefik is exposed to the internet. This means an attack on traefik could grant the attacker root access on the underlying host. 
+- [Recommended](https://doc.traefik.io/traefik/providers/docker/#docker-api-access) by traefik devs, docker-socket-proxy only allows access to the sections of the docker API that Traefik needs to function.
 
 ### Jitsi
 - [Jitsi](https://github.com/jitsi/jitsi-meet#readme) is a full featured video conferencing platform. Essentially host your own Zoom, but with HD video streaming, no time limits, increased security and end to end encryption support.
@@ -90,6 +91,11 @@ Only config files in the repo are the docker-compose yaml files.<br />
 
 ### Heimdall
 - [Heimdall](https://github.com/linuxserver/Heimdall#readme) is an application dashboard, used here as a simple homepage.
+<details> <summary> Expand for homepage screenshot </summary>
+    <p align="Left">
+    <img align="center" src="/images/heimdallScreenshot.png" alt="Screenshot of heimdall homepage" width="275"><br \>
+    </p>
+    </details>
 
 ### Dev Blog
 - Copy of [codeslikeaduck.com](https://codeslikeaduck.com) separately hosted to act as a dev environment.
