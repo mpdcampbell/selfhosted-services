@@ -432,3 +432,10 @@ services:
     volumes:
       - ${LANGUAGETOOL_DIR}/languageTool/ngrams:/ngrams
       - ${LANGUAGETOOL_DIR}/languageTool/fasttext:/fasttext
+
+  excalidraw:
+    image: excalidraw/excalidraw
+    container_name: excalidraw
+    restart: unless-stopped
+    ports:
+      - ${EXCALIDRAW_PORT}:80
