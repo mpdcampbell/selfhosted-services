@@ -75,6 +75,7 @@ services:
     environment:
       - CF_API_EMAIL=${CLOUDFLARE_EMAIL}
       - CF_API_KEY=${CLOUDFLARE_API_KEY}
+      - TZ
     labels:
       - "traefik.enable=true"
       # HTTP-to-HTTPS Redirect
@@ -94,10 +95,8 @@ services:
       - "traefik.http.routers.traefik-rtr.tls.domains[1].sans=*.${BLOGDOMAIN}"
       ## Services - API
       - "traefik.http.routers.traefik-rtr.service=api@internal"
-      ## Geoip Filter
-      - "traefik.http.middlewares.middlewares-geoipfilter.forwardAuth.address=http://geoipfilter:${LISTEN_PORT}/traefik"
       ## Middlewares
-      - "traefik.http.routers.traefik-rtr.middlewares=traefik-headers,chain-authelia@file"  
+      - "traefik.http.routers.traefik-rtr.middlewares=traefik-headers,chain-authelia-no-cf@file"  
       - "traefik.http.middlewares.traefik-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.traefik-headers.headers.allowedhosts=traefik.${DOMAINNAME}" 
       - "traefik.http.middlewares.traefik-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
@@ -220,7 +219,7 @@ services:
       - "traefik.http.middlewares.go2rtc-stream-redirect.redirectregex.replacement=https://dog.${DOMAINNAME}${BASE_PATH}/stream.html?src=${CAM_1}&mode=${STREAM_MODE}"
       - "traefik.http.middlewares.go2rtc-stream-redirect.redirectregex.permanent=true"
       # Middlewares
-      - "traefik.http.routers.go2rtc-rtr.middlewares=go2rtc-headers,middlewares-geoipfilter,chain-authelia-no-cf@file,go2rtc-stream-redirect"
+      - "traefik.http.routers.go2rtc-rtr.middlewares=go2rtc-headers,chain-authelia-no-cf@file,go2rtc-stream-redirect"
       - "traefik.http.middlewares.go2rtc-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
       - "traefik.http.middlewares.go2rtc-headers.headers.allowedhosts=dog.${DOMAINNAME}"
       - "traefik.http.middlewares.go2rtc-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
