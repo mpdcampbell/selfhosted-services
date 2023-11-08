@@ -2,10 +2,6 @@
 
 ########################### NETWORKS
 networks:
-  meet.jitsi:
-    name: meet.jitsi
-    driver: bridge
-    internal: true
   t2_proxy:
     name: t2_proxy
     driver: bridge
@@ -74,7 +70,7 @@ services:
     volumes:
       - ${TRAEFIK_DIR}/rules:/rules 
       - ${TRAEFIK_DIR}/acme/acme.json:/acme.json  
-      - ${TRAEFIK_DIR}/traefik.log:/traefik.log 
+      - ${TRAEFIK_DIR}/traefik.log:/traefik.log
       - ${DOCKER_DIR}/shared:/shared
     environment:
       - CF_API_EMAIL=${CLOUDFLARE_EMAIL}
@@ -369,3 +365,4 @@ services:
       - COUNTRY_CODES
       - SUB_CODES
       - TZ
+  
