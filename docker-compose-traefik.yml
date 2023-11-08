@@ -28,10 +28,11 @@ services:
       - --entryPoints.video.address=:10000/udp
       - --api=true
       - --log=true
-      - --log.level=WARN
+      - --log.level=DEBUG
+      - --log.filePath=/logs/traefik.log
       - --accessLog=true
-      - --accessLog.filePath=/traefik.log
-      - --accessLog.bufferingSize=10
+      - --accessLog.filePath=/logs/access.log
+      - --accessLog.bufferingSize=50
       - --accessLog.filters.statusCodes=100-599
       - --providers.docker=true
       - --providers.docker.endpoint=${SOCKET_PROXY}
@@ -70,7 +71,7 @@ services:
     volumes:
       - ${TRAEFIK_DIR}/rules:/rules 
       - ${TRAEFIK_DIR}/acme/acme.json:/acme.json  
-      - ${TRAEFIK_DIR}/traefik.log:/traefik.log
+      - ${TRAEFIK_DIR}/logs:/logs
       - ${DOCKER_DIR}/shared:/shared
     environment:
       - CF_API_EMAIL=${CLOUDFLARE_EMAIL}
@@ -141,7 +142,7 @@ services:
       - "traefik.http.routers.heimdall-rtr.tls=true"
       - "traefik.http.routers.heimdall-rtr.tls.options=tls-opts@file"
       # Middlewares
-      - "traefik.http.routers.heimdall-rtr.middlewares=heimdall-redirect@docker,heimdall-headers,chain-authelia@file"
+      - "traefik.http.routers.heimdall-rtr.middlewares=heimdall-redirect@docker,heimdall-headers,chain-authelia-no-cf@file"
       - "traefik.http.middlewares.heimdall-redirect.redirectregex.regex=^https?://${DOMAINNAME}/(.*)"
       - "traefik.http.middlewares.heimdall-redirect.redirectregex.replacement=https://www.${DOMAINNAME}/$${1}"
       - "traefik.http.middlewares.heimdall-redirect.redirectregex.permanent=true"
@@ -184,7 +185,7 @@ services:
       - "traefik.http.routers.wishlist-rtr.tls=true"
       - "traefik.http.routers.wishlist-rtr.tls.options=tls-opts@file"
       # Middlewares
-      - "traefik.http.routers.wishlist-rtr.middlewares=wishlist-headers,chain-authelia@file"
+      - "traefik.http.routers.wishlist-rtr.middlewares=wishlist-headers,chain-authelia-no-cf@file"
       - "traefik.http.middlewares.wishlist-headers.headers.accesscontrolalloworiginlist=https://$DOMAINNAME"
       - "traefik.http.middlewares.wishlist-headers.headers.allowedhosts=wishlist.${DOMAINNAME}"
       - "traefik.http.middlewares.wishlist-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
@@ -259,7 +260,7 @@ services:
       - "traefik.http.routers.photoview-rtr.tls=true"
       - "traefik.http.routers.photoview-rtr.tls.options=tls-opts@file"
       # Middlewares
-      - "traefik.http.routers.photoview-rtr.middlewares=photoview-headers,chain-authelia@file"
+      - "traefik.http.routers.photoview-rtr.middlewares=photoview-headers,chain-authelia-no-cf@file"
       - "traefik.http.middlewares.photoview-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.photoview-headers.headers.allowedhosts=photo.${DOMAINNAME}"
       - "traefik.http.middlewares.photoview-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
@@ -305,7 +306,7 @@ services:
       - "traefik.http.routers.authelia-rtr.tls=true"
       - "traefik.http.routers.authelia-rtr.tls.options=tls-opts@file"        
       # Middlewares
-      - "traefik.http.routers.authelia-rtr.middlewares=authelia-headers,chain-authelia@file"
+      - "traefik.http.routers.authelia-rtr.middlewares=authelia-headers,chain-authelia-no-cf@file"
       - "traefik.http.middlewares.authelia-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.authelia-headers.headers.allowedhosts=authelia.${DOMAINNAME}"
       - "traefik.http.middlewares.authelia-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
@@ -338,7 +339,7 @@ services:
       - "traefik.http.routers.blogdev-rtr.tls=true"
       - "traefik.http.routers.blogdev-rtr.tls.options=tls-opts@file"
       # Middlewares
-      - "traefik.http.routers.blogdev-rtr.middlewares=blogdev-headers,chain-authelia@file,errorpage-redirect"
+      - "traefik.http.routers.blogdev-rtr.middlewares=blogdev-headers,chain-authelia-no-cf@file,errorpage-redirect"
       - "traefik.http.middlewares.blogdev-headers.headers.accesscontrolalloworiginlist=https://${DOMAINNAME}"
       - "traefik.http.middlewares.blogdev-headers.headers.allowedhosts=blog.${DOMAINNAME}"
       - "traefik.http.middlewares.blogdev-headers.headers.sslproxyheaders.X-Forwarded-Proto=https"
@@ -363,3 +364,40 @@ services:
       - SUB_CODES
       - TZ
   
+  crowdsec:
+    image: crowdsecurity/crowdsec
+    container_name: crowdsec
+    restart: unless-stopped
+    networks:
+      - t2_proxy
+    environment:
+      TZ: ${TZ}
+      GID: ${PGID}
+      COLLECTIONS: >
+        crowdsecurity/traefik 
+        crowdsecurity/http-cve 
+        crowdsecurity/whitelist-good-actors 
+        crowdsecurity/linux 
+        crowdsecurity/nginx 
+        LePresidente/authelia
+    volumes:
+      - ${TRAEFIK_DIR}/logs/access.log:/logs/traefik/access.log:ro
+      - ${AUTHELIA_DIR}/authelia.log:/logs/authelia/authelia.log:ro
+      - ${CROWDSEC_DIR}/data:/var/lib/crowdsec/data
+      - ${CROWDSEC_DIR}/config:/etc/crowdsec
+  
+  bouncer-traefik:
+    image: thespad/traefik-crowdsec-bouncer
+    container_name: bouncer-traefik
+    restart: unless-stopped
+    depends_on:
+      - crowdsec
+    networks:
+      - t2_proxy
+    environment:
+      - CROWDSEC_BOUNCER_API_KEY=${TRAEFIK_BOUNCER_KEY}
+      - CROWDSEC_AGENT_HOST=crowdsec:${CROWDSEC_PORT}
+      - GIN_MODE=release
+      - PUID
+      - PGID
+      - TZ
