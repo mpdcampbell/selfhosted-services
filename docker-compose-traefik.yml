@@ -232,7 +232,7 @@ services:
 
   #Photo Gallery      
   photoview:
-    image: viktorstrate/photoview:edge
+    image: viktorstrate/photoview:latest
     container_name: photoview
     restart: unless-stopped
     depends_on:
@@ -401,3 +401,20 @@ services:
       - PUID
       - PGID
       - TZ
+
+  crowdsec-dashboard:
+    image: metabase/metabase
+    container_name: crowdsec-dashboard
+    restart: unless-stopped
+    depends_on:
+      - crowdsec
+    networks:
+      - t2_proxy
+    ports:
+      - ${CROWDSEC_DASHBOARD_PORT}:3000
+    volumes:
+      - ${CROWDSEC_DASHBOARD_DIR}/data:/data
+      - ${CROWDSEC_DIR}/data:/metabase-data
+    environment:
+      - MB_DB_FILE=/data/metabase.db
+      - MGID=${PGID}
