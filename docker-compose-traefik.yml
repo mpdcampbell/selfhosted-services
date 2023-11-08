@@ -418,3 +418,17 @@ services:
     environment:
       - MB_DB_FILE=/data/metabase.db
       - MGID=${PGID}
+
+  languagetool:
+    image: meyay/languagetool
+    container_name: languagetool
+    restart: unless-stopped
+    ports:
+      - ${LANGUAGETOOL_PORT}:8010
+    environment:
+      download_ngrams_for_langs: en
+      langtool_languageModel: /ngrams
+      langtool_fasttextModel: /fasttext/lid.176.bin
+    volumes:
+      - ${LANGUAGETOOL_DIR}/languageTool/ngrams:/ngrams
+      - ${LANGUAGETOOL_DIR}/languageTool/fasttext:/fasttext
