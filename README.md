@@ -1,8 +1,8 @@
 # [<img alt="codeslikeaduck logo" width="50px" src="https://www.codeslikeaduck.com/img/codeDuck.svg" />](https://www.codeslikeaduck.com/) selfhosted-services
 A summary of the services I host.<br />
 - All services are hosted as Docker containers, with routing handled via Traefik.<br />
-- Public website [codeslikeaduck.com](https://www.codeslikeaduck.com/) sits behind Cloudflare proxy.<br />
-- Private services sit behind a restrictive GeoIP filter and Authelia 2FA.<br />
+- Public website [codeslikeaduck.com](https://www.codeslikeaduck.com/) sits behind cloudflare proxy.<br />
+- Private services sit behind GeoIP filter and Authelia 2FA.<br />
 - Only config files in this repo are the docker-compose yaml files.<br />
 - The files for codeslikeaduck are in their [own repo](https://github.com/mpdcampbell/blog).<br />
 
